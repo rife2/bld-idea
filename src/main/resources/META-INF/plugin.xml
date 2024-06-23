@@ -9,7 +9,7 @@
     <resource-bundle>messages.BldBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" id="MyToolWindow"/>
+        <toolWindow factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" id="bld"/>
     </extensions>
 
     <applicationListeners>
