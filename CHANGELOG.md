@@ -1,6 +1,6 @@
 <!-- Keep a Changelog guide -> https://keepachangelog.com -->
 
-# bld-idea Changelog
+# bld Changelog
 
 ## [Unreleased]
 ### Added
