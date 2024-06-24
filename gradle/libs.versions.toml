@@ -1,6 +1,6 @@
 [versions]
 # libraries
-exampleLibrary = "24.1.0"
+bld = "1.9.2-SNAPSHOT"
 
 # plugins
 kotlin = "1.9.24"
@@ -10,7 +10,7 @@ qodana = "2024.1.5"
 kover = "0.8.1"
 
 [libraries]
-exampleLibrary = { group = "com.example", name = "exampleLibrary", version.ref = "exampleLibrary" }
+bld = { group = "com.uwyn.rife2", name = "bld", version.ref = "bld" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
