@@ -48,6 +48,7 @@ public class BldToolWindowFactory implements ToolWindowFactory {
                     java_args.add(project_dir.getCanonicalPath() + "/bld");
                     java_args.add(Wrapper.BUILD_ARGUMENT);
                     java_args.add(bldMainClass);
+                    java_args.add(Wrapper.JSON_ARGUMENT);
 
                     var process_builder = new ProcessBuilder(java_args);
                     process_builder.directory(new File(Objects.requireNonNull(project_dir.getCanonicalPath())));
