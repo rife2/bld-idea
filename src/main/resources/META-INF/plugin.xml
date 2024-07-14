@@ -12,7 +12,7 @@
         <projectService serviceImplementation="rife.bld.idea.execution.BldExecution"/>
         <projectService serviceImplementation="rife.bld.idea.console.BldConsoleManager"/>
         <toolWindow id="Bld Console" icon="BldIcons.Icon" factoryClass="rife.bld.idea.console.BldConsoleWindowFactory" anchor="bottom"/>
-        <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="left"/>
+        <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="right"/>
         <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>
     </extensions>
 
