@@ -9,6 +9,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
@@ -43,7 +44,7 @@ public class BldExecution {
     }
 
     public static void listTasks(@NotNull Project project) {
-        executeCommands(project, (String[]) null);
+        executeCommands(project, "help", Wrapper.JSON_ARGUMENT);
     }
 
     public static void executeCommands(@NotNull Project project, String... commands) {
@@ -67,7 +68,6 @@ public class BldExecution {
                 command_line.addParameter(project_dir.getCanonicalPath() + "/bld");
                 command_line.addParameter(Wrapper.BUILD_ARGUMENT);
                 command_line.addParameter(bldMainClass);
-                command_line.addParameter(Wrapper.JSON_ARGUMENT);
                 if (commands != null) {
                     command_line.addParameters(commands);
                 }
@@ -94,8 +94,10 @@ public class BldExecution {
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 super.onTextAvailable(event, outputType);
-                BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project);
-                output.add(event.getText());
+                if (!outputType.equals(ProcessOutputType.SYSTEM)) {
+                    BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project);
+                    output.add(event.getText());
+                }
             }
         });
 
