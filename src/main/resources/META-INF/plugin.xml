@@ -9,7 +9,11 @@
     <resource-bundle>messages.BldBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" id="bld"/>
+        <projectService serviceImplementation="rife.bld.idea.execution.BldExecution"/>
+        <projectService serviceImplementation="rife.bld.idea.console.BldConsoleManager"/>
+        <toolWindow id="Bld Console" icon="BldIcons.Icon" factoryClass="rife.bld.idea.console.BldConsoleWindowFactory" anchor="bottom"/>
+        <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="left"/>
+        <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>
     </extensions>
 
     <applicationListeners>
