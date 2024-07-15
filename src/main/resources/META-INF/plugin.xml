@@ -5,12 +5,11 @@
     <vendor>gbevin</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
 
     <resource-bundle>messages.BldBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="rife.bld.idea.execution.BldExecution"/>
-        <projectService serviceImplementation="rife.bld.idea.console.BldConsoleManager"/>
         <toolWindow id="Bld Console" icon="BldIcons.Icon" factoryClass="rife.bld.idea.console.BldConsoleWindowFactory" anchor="bottom"/>
         <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="right"/>
         <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>

@@ -10,12 +10,14 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.utils.BldPluginDisposable;
 
-public class BldConsoleManager {
+@Service(Service.Level.PROJECT)
+public final class BldConsoleManager {
     private final ConsoleView bldConsole_;
 
     public BldConsoleManager(@NotNull Project project) {
