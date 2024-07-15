@@ -126,9 +126,9 @@ public class BldConsoleViewPanel extends JPanel {
         group.add(action);
 
         var toolbar_panel = new JPanel(new BorderLayout());
-        var action_manager = ActionManager.getInstance();
-        var let_toolbar = action_manager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, group, false);
-        toolbar_panel.add(let_toolbar.getComponent(), BorderLayout.WEST);
+//        var action_manager = ActionManager.getInstance();
+//        var left_toolbar = action_manager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, group, false);
+//        toolbar_panel.add(left_toolbar.getComponent(), BorderLayout.WEST);
 
         return toolbar_panel;
     }

@@ -5,15 +5,32 @@
     <vendor>gbevin</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    <depends>com.intellij.modules.externalSystem</depends>
 
     <resource-bundle>messages.BldBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceImplementation="rife.bld.idea.execution.BldExecution"/>
         <projectService serviceImplementation="rife.bld.idea.console.BldConsoleManager"/>
-        <toolWindow id="Bld Console" icon="BldIcons.Icon" factoryClass="rife.bld.idea.console.BldConsoleWindowFactory" anchor="bottom"/>
-        <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="right"/>
-        <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>
+
+        <toolWindow anchor="right" id="bld" icon="BldIcons.Icon"
+                    factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory"/>
+
+<!--        <toolWindow id="Bld Console" icon="BldIcons.Icon" factoryClass="rife.bld.idea.console.BldConsoleWindowFactory" anchor="bottom"/>-->
+<!--        <toolWindow id="bld" icon="BldIcons.Icon" factoryClass="rife.bld.idea.toolWindow.BldToolWindowFactory" anchor="right"/>-->
+<!--        <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>-->
+        <projectImportProvider
+            implementation="rife.bld.idea.service.project.wizard.BldProjectImportProvider"/>
+
+        <projectImportBuilder
+            implementation="rife.bld.idea.service.project.wizard.BldProjectImportBuilder"/>
+
+        <externalSystemExecutionConsoleManager implementation="rife.bld.idea.execution.BldExecutionConsoleManager" id="gradle" order="last"/>
+        <externalSystemManager implementation="rife.bld.idea.BldManager"/>
+
+        <externalProjectDataService implementation="rife.bld.idea.service.project.metadata.BldMetadataService"/>
+        <moduleService serviceImplementation="rife.bld.idea.service.project.metadata.ModuleTargetMetadataStorage"/>
     </extensions>
 
     <applicationListeners>
