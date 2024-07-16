@@ -12,6 +12,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
@@ -34,27 +35,60 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 
-public class BldExecution {
-    private static final ConcurrentHashMap<Project, Process> runningBldProcesses_ = new ConcurrentHashMap<>();
+@Service(Service.Level.PROJECT)
+public final class BldExecution {
+    private final Project project_;
+    private final ConcurrentHashMap<Project, Process> runningBldProcesses_ = new ConcurrentHashMap<>();
+
+    private VirtualFile projectDir_ = null;
+    private String bldMainClass_ = null;
 
     public BldExecution(@NotNull Project project) {
+        project_ =  project;
     }
 
-    public static boolean hasActiveBldProcess(@NotNull Project project) {
-        return runningBldProcesses_.containsKey(project);
+    public static BldExecution getInstance(final @NotNull Project project) {
+        return project.getService(BldExecution.class);
     }
 
-    public static void terminateBldProcess(Project project) {
-        var process = runningBldProcesses_.get(project);
+    public boolean hasActiveBldProcess() {
+        return runningBldProcesses_.containsKey(project_);
+    }
+
+    public void terminateBldProcess() {
+        var process = runningBldProcesses_.get(project_);
         if (process != null) {
             process.destroy();
-            runningBldProcesses_.remove(project, process);
+            runningBldProcesses_.remove(project_, process);
         }
     }
 
-    public static void listTasks(@NotNull Project project) {
-        var output = String.join("", executeCommands(project, true, "help", Wrapper.JSON_ARGUMENT));
-        BldConsoleManager.showTaskMessage("Detected the bld commands\n", ConsoleViewContentType.SYSTEM_OUTPUT, project);
+    public void setupProject() {
+        projectDir_ = ProjectUtil.guessProjectDir(project_);
+        if (projectDir_ == null) {
+            BldConsoleManager.showTaskMessage("Could not find project directory\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
+            return;
+        }
+
+        bldMainClass_ = guessBldMainClass(projectDir_);
+        if (bldMainClass_ == null) {
+            BldConsoleManager.showTaskMessage("Could not find bld main class for project " + projectDir_ + "\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
+            return;
+        }
+
+        BldConsoleManager.showTaskMessage("Found bld main class: " + bldMainClass_ + "\n", ConsoleViewContentType.SYSTEM_OUTPUT, project_);
+
+        BldConfiguration.getInstance(project_).setupComplete();
+    }
+
+    public void listTasks() {
+        var output = String.join("", executeCommands(true, "help", Wrapper.JSON_ARGUMENT));
+        if (output.isEmpty()) {
+            BldConsoleManager.showTaskMessage("Failed to detect the bld commands.\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
+            return;
+        }
+        
+        BldConsoleManager.showTaskMessage("Detected the bld commands\n", ConsoleViewContentType.SYSTEM_OUTPUT, project_);
 
         var commands = new ArrayList<BldBuildCommand>();
 
@@ -85,32 +119,22 @@ public class BldExecution {
             });
         }
 
-        BldConfiguration.getInstance(project).setBuildCommandList(commands);
+        BldConfiguration.getInstance(project_).setBuildCommandList(commands);
     }
 
-    public static List<String> executeCommands(@NotNull Project project, boolean silent, String... commands) {
-        var project_dir = ProjectUtil.guessProjectDir(project);
-        if (project_dir == null) {
-            BldConsoleManager.showTaskMessage("Could not find project directory\n", ConsoleViewContentType.ERROR_OUTPUT, project);
+    public List<String> executeCommands(boolean silent, String... commands) {
+        if (projectDir_ == null || bldMainClass_ == null) {
             return Collections.emptyList();
         }
-
-        var bldMainClass = guessBldMainClass(project, project_dir);
-        if (bldMainClass == null) {
-            BldConsoleManager.showTaskMessage("Could not find bld main class for project " + project_dir + "\n", ConsoleViewContentType.ERROR_OUTPUT, project);
-            return Collections.emptyList();
-        }
-
-        BldConsoleManager.showTaskMessage("Found bld main class: " + bldMainClass + "\n", ConsoleViewContentType.SYSTEM_OUTPUT, project);
 
         final var command_line = new GeneralCommandLine();
-        command_line.setWorkDirectory(project_dir.getCanonicalPath());
+        command_line.setWorkDirectory(projectDir_.getCanonicalPath());
         command_line.setExePath("java");
         command_line.addParameter("-jar");
-        command_line.addParameter(project_dir.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
-        command_line.addParameter(project_dir.getCanonicalPath() + "/bld");
+        command_line.addParameter(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
+        command_line.addParameter(projectDir_.getCanonicalPath() + "/bld");
         command_line.addParameter(Wrapper.BUILD_ARGUMENT);
-        command_line.addParameter(bldMainClass);
+        command_line.addParameter(bldMainClass_);
         if (commands != null) {
             command_line.addParameters(commands);
         }
@@ -120,7 +144,7 @@ public class BldExecution {
             process = command_line.createProcess();
         }
         catch (ExecutionException e) {
-            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project);
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
             return Collections.emptyList();
         }
 
@@ -132,21 +156,21 @@ public class BldExecution {
                 super.onTextAvailable(event, outputType);
                 if (!outputType.equals(ProcessOutputType.SYSTEM)) {
                     if (!silent) {
-                        BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project);
+                        BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project_);
                     }
                     output.add(event.getText());
                 }
             }
         });
 
-        runningBldProcesses_.put(project, process);
+        runningBldProcesses_.put(project_, process);
         process_handler.runProcess();
-        runningBldProcesses_.remove(project, process);
+        runningBldProcesses_.remove(project_, process);
 
         return output;
     }
 
-    private static String guessBldMainClass(@NotNull Project project, @NotNull VirtualFile projectDir) {
+    private String guessBldMainClass(@NotNull VirtualFile projectDir) {
         var project_bld = projectDir.findChild("bld");
         if (project_bld == null) {
             project_bld = projectDir.findChild("bld.bat");
@@ -159,7 +183,7 @@ public class BldExecution {
                     return matcher.group(1);
                 }
             } catch (IOException e) {
-                BldConsoleManager.showTaskMessage("Unable to read contents of " + project_bld + "\n", ConsoleViewContentType.ERROR_OUTPUT, project);
+                BldConsoleManager.showTaskMessage("Unable to read contents of " + project_bld + "\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
             }
         }
         return null;

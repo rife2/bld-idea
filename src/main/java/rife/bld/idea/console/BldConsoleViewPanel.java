@@ -98,7 +98,7 @@ public class BldConsoleViewPanel extends JPanel {
         public void actionPerformed(AnActionEvent e) {
             var project = e.getProject();
             if (project != null) {
-                BldExecution.terminateBldProcess(project);
+                BldExecution.getInstance(project).terminateBldProcess();
                 BldConsoleManager.getConsole(project).print(BldBundle.message("bld.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
             }
         }
@@ -111,7 +111,7 @@ public class BldConsoleViewPanel extends JPanel {
             if (project == null) {
                 return;
             }
-            presentation.setEnabled(BldExecution.hasActiveBldProcess(project));
+            presentation.setEnabled(BldExecution.getInstance(project).hasActiveBldProcess());
         }
 
         @Override
