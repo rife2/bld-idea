@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.CellAppearanceEx;
 import com.intellij.openapi.roots.ui.util.CompositeAppearance;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +47,7 @@ public final class BldCommandNodeDescriptor extends BldNodeDescriptor {
 
         final var color = UIUtil.getLabelForeground();
         var nameAttributes = new TextAttributes(color, null, null, EffectType.BOXED, Font.PLAIN);
-        highlightedText_.getEnding().addText(command_.getDisplayName(), nameAttributes);
+        highlightedText_.getEnding().addText(command_.displayName(), nameAttributes);
 
         myName = highlightedText_.getText();
 
@@ -63,7 +62,7 @@ public final class BldCommandNodeDescriptor extends BldNodeDescriptor {
     public void customize(@NotNull SimpleColoredComponent component) {
         getHighlightedText().customize(component);
         component.setIcon(getIcon());
-        var toolTipText = getCommand().getNotEmptyDescription();
+        var toolTipText = getCommand().description();
         component.setToolTipText(toolTipText);
     }
 }

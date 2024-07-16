@@ -11,17 +11,13 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputType;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import rife.bld.idea.config.BldBuildCommand;
-import rife.bld.idea.config.BldBuildListener;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.utils.BldConstants;
@@ -29,6 +25,7 @@ import rife.bld.wrapper.Wrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,34 +92,17 @@ public final class BldExecution {
         var json = new JSONObject(output);
         var json_commands = json.getJSONObject("commands");
         for (var json_command_key : json_commands.keySet()) {
-            commands.add(new BldBuildCommand() {
-                @Override
-                public @Nullable String getName() {
-                    return json_command_key;
-                }
-
-                @Override
-                public @Nullable String getDisplayName() {
-                    return json_command_key;
-                }
-
-                @Nls(capitalization = Nls.Capitalization.Sentence)
-                @Override
-                public @Nullable String getNotEmptyDescription() {
-                    return json_commands.getString(json_command_key);
-                }
-
-                @Override
-                public void run(DataContext dataContext, List<?> additionalProperties, BldBuildListener buildListener) {
-
-                }
-            });
+            commands.add(new BldBuildCommand(json_command_key, json_command_key, json_commands.getString(json_command_key)));
         }
 
         BldConfiguration.getInstance(project_).setBuildCommandList(commands);
     }
 
     public List<String> executeCommands(boolean silent, String... commands) {
+        return executeCommands(silent, Arrays.asList(commands));
+    }
+
+    public List<String> executeCommands(boolean silent, List<String> commands) {
         if (projectDir_ == null || bldMainClass_ == null) {
             return Collections.emptyList();
         }

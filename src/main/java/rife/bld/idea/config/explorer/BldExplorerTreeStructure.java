@@ -31,9 +31,9 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
     private final Object dependenciesFolder_ = new Object();
 
     private static final Comparator<BldBuildCommand> commandComparator = (command1, command2) -> {
-        final String name1 = command1.getDisplayName();
+        final String name1 = command1.displayName();
         if (name1 == null) return -1;
-        final String name2 = command2.getDisplayName();
+        final String name2 = command2.displayName();
         if (name2 == null) return 1;
         return name1.compareToIgnoreCase(name2);
     };

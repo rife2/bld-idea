@@ -5,11 +5,19 @@
 package rife.bld.idea.project;
 
 import com.intellij.execution.RunManagerListener;
+import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
+import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.NlsSafe;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
@@ -17,12 +25,15 @@ import com.intellij.ui.TreeUIHelper;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
+import com.intellij.util.EditSourceOnDoubleClickHandler;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfigurationListener;
-import rife.bld.idea.project.actions.RefreshAction;
-import rife.bld.idea.project.actions.RunAction;
+import rife.bld.idea.config.explorer.nodeDescriptors.BldCommandNodeDescriptor;
+import rife.bld.idea.console.BldConsoleManager;
+import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.BldExplorerTreeStructure;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptor;
@@ -31,6 +42,11 @@ import rife.bld.idea.utils.BldConstants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class BldProjectWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
     private Project project_;
@@ -77,6 +93,13 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
         TreeUtil.installActions(tree_);
         TreeUIHelper.getInstance().installTreeSpeedSearch(tree_);
+
+        new EditSourceOnDoubleClickHandler.TreeMouseListener(tree_, null) {
+            @Override
+            protected void processDoubleClick(@NotNull MouseEvent e, @NotNull DataContext dataContext, @NotNull TreePath treePath) {
+                runSelection(DataManager.getInstance().getDataContext(tree_), true);
+            }
+        }.installOn(tree_);
 
         project.getMessageBus().connect(this).subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
             @Override
@@ -134,6 +157,115 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             else {
                 append(tree.convertValueToText(value, selected, expanded, leaf, row, hasFocus), SimpleTextAttributes.REGULAR_ATTRIBUTES);
             }
+        }
+    }
+
+    private void runSelection(final DataContext dataContext, final boolean moveFocusToEditor) {
+        if (!canRunSelection()) {
+            return;
+        }
+
+        final var commands = getCommandNamesFromPaths(tree_.getSelectionPaths());
+
+        var commands_info = String.join(" ", commands);
+        new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.commands", commands_info), true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", commands_info), ConsoleViewContentType.USER_INPUT, project_);
+                BldExecution.getInstance(project_).executeCommands(false, commands);
+            }
+        }.queue();
+
+        if (moveFocusToEditor) {
+            ToolWindowManager.getInstance(project_).activateEditorComponent();
+        }
+    }
+
+    private boolean canRunSelection() {
+        if (tree_ == null) {
+            return false;
+        }
+        final TreePath[] paths = tree_.getSelectionPaths();
+        if (paths == null) {
+            return false;
+        }
+        for (final TreePath path : paths) {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+            final Object userObject = node.getUserObject();
+            return userObject instanceof  BldCommandNodeDescriptor;
+        }
+        return true;
+    }
+
+    private static List<@NlsSafe String> getCommandNamesFromPaths(TreePath[] paths) {
+        if (paths == null || paths.length == 0) {
+            return Collections.emptyList();
+        }
+        final List<String> targets = new ArrayList<>();
+        for (final TreePath path : paths) {
+            final Object userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
+            if (!(userObject instanceof BldCommandNodeDescriptor)) {
+                continue;
+            }
+            final BldBuildCommand target = ((BldCommandNodeDescriptor)userObject).getCommand();
+            targets.add(target.name());
+        }
+        return targets;
+    }
+
+    private final class RefreshAction extends AnAction implements DumbAware {
+        public RefreshAction() {
+            super(BldBundle.messagePointer("refresh.bld.command.action.name"),
+                BldBundle.messagePointer("refresh.bld.command.action.description"), AllIcons.Actions.Refresh);
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.refresh"), true) {
+                @Override
+                public void run(@NotNull ProgressIndicator indicator) {
+                    BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.refresh"), ConsoleViewContentType.USER_INPUT, project_);
+
+                    BldExecution.getInstance(project_).listTasks();
+                }
+            }.queue();
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent event) {
+            final var presentation = event.getPresentation();
+            presentation.setText(BldBundle.messagePointer("refresh.bld.command.action.name"));
+            presentation.setEnabled(true);
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+    }
+
+    private final class RunAction extends AnAction implements DumbAware {
+        public RunAction() {
+            super(BldBundle.messagePointer("run.bld.command.action.name"),
+                BldBundle.messagePointer("run.bld.command.action.description"), AllIcons.Actions.Execute);
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            runSelection(e.getDataContext(), true);
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent event) {
+            final var presentation = event.getPresentation();
+            presentation.setText(BldBundle.messagePointer("run.bld.command.action.name"));
+            presentation.setEnabled(true);
+            presentation.setEnabled(canRunSelection());
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
         }
     }
 

@@ -55,7 +55,6 @@ public final class BldConfiguration implements Disposable {
     }
 
     public void setBuildCommandList(ArrayList<BldBuildCommand> commands) {
-
         buildCommands_.clear();
         buildCommands_.addAll(commands);
         ApplicationManager.getApplication().invokeLater(
