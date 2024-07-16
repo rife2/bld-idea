@@ -23,6 +23,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
+import rife.bld.idea.utils.BldConstants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -127,8 +128,9 @@ public class BldConsoleViewPanel extends JPanel {
 
         var toolbar_panel = new JPanel(new BorderLayout());
         var action_manager = ActionManager.getInstance();
-        var let_toolbar = action_manager.createActionToolbar(ActionPlaces.COMPILER_MESSAGES_TOOLBAR, group, false);
-        toolbar_panel.add(let_toolbar.getComponent(), BorderLayout.WEST);
+        var left_toolbar = action_manager.createActionToolbar(BldConstants.BLD_CONSOLE_TOOLBAR, group, false);
+        left_toolbar.setTargetComponent(this);
+        toolbar_panel.add(left_toolbar.getComponent(), BorderLayout.WEST);
 
         return toolbar_panel;
     }

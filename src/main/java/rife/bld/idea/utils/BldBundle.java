@@ -4,33 +4,25 @@
  */
 package rife.bld.idea.utils;
 
-import com.intellij.AbstractBundle;
+import com.intellij.DynamicBundle;
+import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.PropertyKey;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.ResourceBundle;
+import java.util.function.Supplier;
 
 public class BldBundle {
-    private static Reference<ResourceBundle> ourBundle;
+    private static final @NonNls String BUNDLE = "messages.BldBundle";
+    private static final DynamicBundle INSTANCE = new DynamicBundle(BldBundle.class, BUNDLE);
 
-    @NonNls
-    private static final String BUNDLE = "messages.BldBundle";
+    private BldBundle() {}
 
-    public static String message(@PropertyKey(resourceBundle = BUNDLE) String key, Object... params) {
-        return AbstractBundle.message(getBundle(), key, params);
+    public static @NotNull @Nls String message(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, Object @NotNull ... params) {
+        return INSTANCE.getMessage(key, params);
     }
 
-    private static ResourceBundle getBundle() {
-        ResourceBundle bundle = null;
-
-        if (ourBundle != null) bundle = ourBundle.get();
-
-        if (bundle == null) {
-            bundle = ResourceBundle.getBundle(BUNDLE);
-            ourBundle = new SoftReference<>(bundle);
-        }
-        return bundle;
+    public static @NotNull Supplier<@Nls String> messagePointer(@NotNull @PropertyKey(resourceBundle = BUNDLE) String key, Object @NotNull ... params) {
+        return INSTANCE.getLazyMessage(key, params);
     }
 }

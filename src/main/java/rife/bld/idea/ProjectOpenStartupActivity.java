@@ -16,21 +16,7 @@ public class ProjectOpenStartupActivity implements ProjectActivity {
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
-        System.out.println("Startup");
-
         BldExecution.listTasks(project);
-
-        /* Clear console window. */
-//        ApplicationManager.getApplication().invokeAndWait(() -> {
-//            ConsoleView executionConsole = BldConsoleManager.getConsole(project);
-//            executionConsole.getComponent().setVisible(true);
-//            executionConsole.clear();
-//            var console = ToolWindowManagerEx.getInstance(project).getToolWindow(BldConstants.BLD_CONSOLE_NAME);
-//            if (console != null) {
-//                console.activate(null);
-//            }
-//        }, ModalityState.nonModal());
-
         return null;
     }
 }
