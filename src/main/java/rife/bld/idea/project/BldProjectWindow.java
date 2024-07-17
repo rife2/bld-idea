@@ -10,6 +10,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
@@ -20,7 +21,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.search.FilenameIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.ScrollPaneFactory;
@@ -171,6 +171,8 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             return;
         }
 
+        FileDocumentManager.getInstance().saveAllDocuments();
+
         final var commands = getCommandNamesFromPaths(tree_.getSelectionPaths());
 
         var commands_info = String.join(" ", commands);
@@ -227,6 +229,8 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
         @Override
         public void actionPerformed(@NotNull AnActionEvent e) {
+            FileDocumentManager.getInstance().saveAllDocuments();
+
             new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.refresh"), true) {
                 @Override
                 public void run(@NotNull ProgressIndicator indicator) {
