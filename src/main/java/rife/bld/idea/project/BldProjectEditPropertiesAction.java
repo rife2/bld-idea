@@ -18,7 +18,7 @@ final class BldProjectEditPropertiesAction extends AnAction implements DumbAware
 
     public BldProjectEditPropertiesAction(Project project) {
         super(BldBundle.messagePointer("properties.bld.command.action.name"),
-            BldBundle.messagePointer("properties.bld.command.action.description"), AllIcons.Actions.EditSource);
+            BldBundle.messagePointer("properties.bld.command.action.description"), AllIcons.Actions.EditScheme);
 
         project_ = project;
     }
