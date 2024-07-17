@@ -21,7 +21,6 @@ import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.utils.BldConstants;
-import rife.bld.wrapper.Wrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,6 +30,9 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
+
+import static rife.bld.idea.utils.BldConstants.WRAPPER_BUILD_ARGUMENT;
+import static rife.bld.idea.utils.BldConstants.WRAPPER_JSON_ARGUMENT;
 
 @Service(Service.Level.PROJECT)
 public final class BldExecution {
@@ -83,7 +85,7 @@ public final class BldExecution {
     }
 
     public void listTasks() {
-        var output = String.join("", executeCommands(true, "help", Wrapper.JSON_ARGUMENT));
+        var output = String.join("", executeCommands(true, "help", WRAPPER_JSON_ARGUMENT));
         if (output.isEmpty()) {
             BldConsoleManager.showTaskMessage("Failed to detect the bld commands.\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
             return;
@@ -117,7 +119,7 @@ public final class BldExecution {
         command_line.addParameter("-jar");
         command_line.addParameter(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
         command_line.addParameter(projectDir_.getCanonicalPath() + "/bld");
-        command_line.addParameter(Wrapper.BUILD_ARGUMENT);
+        command_line.addParameter(WRAPPER_BUILD_ARGUMENT);
         command_line.addParameter(bldMainClass_);
         if (commands != null) {
             command_line.addParameters(commands);

@@ -1,6 +1,5 @@
 [versions]
 # libraries
-bld = "2.0.0-SNAPSHOT"
 json = "20240303"
 
 # plugins
@@ -11,7 +10,6 @@ qodana = "2024.1.5"
 kover = "0.8.1"
 
 [libraries]
-bld = { group = "com.uwyn.rife2", name = "bld", version.ref = "bld" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 
 [plugins]

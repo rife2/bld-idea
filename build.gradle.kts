@@ -26,14 +26,8 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    implementation(libs.bld)
     implementation(libs.json)
 }
-
-//configurations.all {
-//    resolutionStrategy.cacheDynamicVersionsFor(0, TimeUnit.MINUTES)
-//    resolutionStrategy.cacheChangingModulesFor(0, TimeUnit.MINUTES)
-//}
 
 // Set the JVM language level used to build the project.
 kotlin {
