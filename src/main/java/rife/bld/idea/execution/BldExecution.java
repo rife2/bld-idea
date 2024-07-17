@@ -60,6 +60,10 @@ public final class BldExecution {
         }
     }
 
+    public String getBldMainClass() {
+        return bldMainClass_;
+    }
+
     public void setupProject() {
         projectDir_ = ProjectUtil.guessProjectDir(project_);
         if (projectDir_ == null) {

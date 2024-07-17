@@ -10,6 +10,7 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAware;
@@ -18,6 +19,9 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.NlsSafe;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.search.FilenameIndex;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
@@ -135,6 +139,8 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         final var group = new DefaultActionGroup();
         group.add(new RefreshAction());
         group.add(new RunAction());
+        group.addSeparator();
+        group.add(new EditAction());
 
         final var action_toolbar = ActionManager.getInstance().createActionToolbar(BldConstants.BLD_EXPLORER_TOOLBAR, group, true);
         action_toolbar.setTargetComponent(this);
@@ -261,6 +267,34 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             presentation.setText(BldBundle.messagePointer("run.bld.command.action.name"));
             presentation.setEnabled(true);
             presentation.setEnabled(canRunSelection());
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+    }
+
+    private final class EditAction extends AnAction implements DumbAware {
+        public EditAction() {
+            super(BldBundle.messagePointer("edit.bld.command.action.name"),
+                BldBundle.messagePointer("edit.bld.command.action.description"), AllIcons.Actions.EditSource);
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            var main_class = BldExecution.getInstance(project_).getBldMainClass();
+            var psi_class =JavaPsiFacade.getInstance(project_).findClass(main_class, GlobalSearchScope.allScope(project_));
+            if (psi_class != null) {
+                FileEditorManager.getInstance(project_).openFile(psi_class.getContainingFile().getVirtualFile());
+            }
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent event) {
+            final var presentation = event.getPresentation();
+            presentation.setText(BldBundle.messagePointer("edit.bld.command.action.name"));
+            presentation.setEnabled(true);
         }
 
         @Override
