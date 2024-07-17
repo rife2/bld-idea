@@ -66,6 +66,18 @@ public final class BldExecution {
         return bldMainClass_;
     }
 
+    public VirtualFile getBldProperties() {
+        var lib = projectDir_.findChild("lib");
+        if (lib == null) return null;
+        var bld = lib.findChild("bld");
+        if (bld == null) return null;
+        return bld.findChild("bld-wrapper.properties");
+    }
+
+    public boolean hasBldProperties() {
+        return getBldProperties() != null;
+    }
+
     public void setupProject() {
         projectDir_ = ProjectUtil.guessProjectDir(project_);
         if (projectDir_ == null) {

@@ -13,30 +13,29 @@ import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectEditAction extends AnAction implements DumbAware {
+final class BldProjectEditPropertiesAction extends AnAction implements DumbAware {
     private final Project project_;
 
-    public BldProjectEditAction(Project project) {
-        super(BldBundle.messagePointer("edit.bld.command.action.name"),
-            BldBundle.messagePointer("edit.bld.command.action.description"), AllIcons.Actions.EditSource);
+    public BldProjectEditPropertiesAction(Project project) {
+        super(BldBundle.messagePointer("properties.bld.command.action.name"),
+            BldBundle.messagePointer("properties.bld.command.action.description"), AllIcons.Actions.EditSource);
 
         project_ = project;
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        var main_class = BldExecution.getInstance(project_).getBldMainClass();
-        var psi_class = JavaPsiFacade.getInstance(project_).findClass(main_class, GlobalSearchScope.allScope(project_));
-        if (psi_class != null) {
-            FileEditorManager.getInstance(project_).openFile(psi_class.getContainingFile().getVirtualFile());
+        var properties = BldExecution.getInstance(project_).getBldProperties();
+        if (properties != null) {
+            FileEditorManager.getInstance(project_).openFile(properties);
         }
     }
 
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("edit.bld.command.action.name"));
-        presentation.setEnabled(true);
+        presentation.setText(BldBundle.messagePointer("properties.bld.command.action.name"));
+        presentation.setEnabled(BldExecution.getInstance(project_).hasBldProperties());
     }
 
     @Override
