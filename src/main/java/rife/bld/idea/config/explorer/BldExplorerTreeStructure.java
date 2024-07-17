@@ -78,7 +78,7 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
     }
 
     @Override
-    public Object @NotNull [] getChildElements(@NotNull Object element) {
+    public Object[] getChildElements(@NotNull Object element) {
         final var configuration = BldConfiguration.getInstance(project_);
         if (element == root_) {
             if (!configuration.isInitialized()) {
