@@ -9,8 +9,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.RegisterToolWindowTask;
+import com.intellij.openapi.wm.ToolWindowAnchor;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.EventDispatcher;
+import icons.BldIcons;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.console.BldConsoleWindowFactory;
+import rife.bld.idea.project.BldProjectWindowFactory;
+import rife.bld.idea.utils.BldConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +56,23 @@ public final class BldConfiguration implements Disposable {
         initialized_ = true;
 
         ApplicationManager.getApplication().invokeLater(
-            () -> eventDispatcher_.getMulticaster().configurationLoaded(),
+            () -> {
+                ToolWindowManager.getInstance(project_).registerToolWindow(BldConstants.CONSOLE_NAME, (builder) -> {
+                    builder.icon = BldIcons.Icon;
+                    builder.anchor = ToolWindowAnchor.BOTTOM;
+                    builder.contentFactory = new BldConsoleWindowFactory();
+                    return null;
+                });
+
+                ToolWindowManager.getInstance(project_).registerToolWindow(BldConstants.PROJECT_NAME, (builder) -> {
+                    builder.icon = BldIcons.Icon;
+                    builder.anchor = ToolWindowAnchor.RIGHT;
+                    builder.contentFactory = new BldProjectWindowFactory();
+                    return null;
+                });
+
+                eventDispatcher_.getMulticaster().configurationLoaded();
+            },
             ModalityState.any()
         );
     }

@@ -10,6 +10,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.ui.content.ContentFactory;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.config.BldConfiguration;
 
 public class BldProjectWindowFactory implements ToolWindowFactory, DumbAware {
     @Override
@@ -17,11 +18,5 @@ public class BldProjectWindowFactory implements ToolWindowFactory, DumbAware {
         var window = new BldProjectWindow(project);
         var content = ContentFactory.getInstance().createContent(window, null, false);
         toolWindow.getContentManager().addContent(content);
-    }
-
-    @Override
-    public boolean isApplicable(@NotNull Project project) {
-        // TODO
-        return true;
     }
 }
