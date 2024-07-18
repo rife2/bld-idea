@@ -14,6 +14,4 @@ public class BldIcons {
     }
 
     public static final Icon Bld = load("/icons/bldIcon.svg");
-    public static final Icon Online = load("/icons/online.svg");
-    public static final Icon Offline = load("/icons/offline.svg");
 }
