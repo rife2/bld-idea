@@ -31,8 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONObject;
 
-import static rife.bld.idea.utils.BldConstants.WRAPPER_BUILD_ARGUMENT;
-import static rife.bld.idea.utils.BldConstants.WRAPPER_JSON_ARGUMENT;
+import static rife.bld.idea.utils.BldConstants.*;
 
 @Service(Service.Level.PROJECT)
 public final class BldExecution {
@@ -42,12 +41,22 @@ public final class BldExecution {
     private VirtualFile projectDir_ = null;
     private String bldMainClass_ = null;
 
+    private boolean offline_ = false;
+
     public BldExecution(@NotNull Project project) {
         project_ =  project;
     }
 
     public static BldExecution getInstance(final @NotNull Project project) {
         return project.getService(BldExecution.class);
+    }
+
+    public void setOffline(boolean flag) {
+        offline_ = flag;
+    }
+
+    public boolean isOffline() {
+        return offline_;
     }
 
     public boolean hasActiveBldProcess() {
@@ -133,6 +142,9 @@ public final class BldExecution {
         command_line.addParameter(projectDir_.getCanonicalPath() + "/bld");
         command_line.addParameter(WRAPPER_BUILD_ARGUMENT);
         command_line.addParameter(bldMainClass_);
+        if (offline_) {
+            command_line.addParameters(WRAPPER_OFFLINE_ARGUMENT);
+        }
         if (commands != null) {
             command_line.addParameters(commands);
         }

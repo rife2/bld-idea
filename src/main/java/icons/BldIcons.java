@@ -13,5 +13,7 @@ public class BldIcons {
         return IconLoader.getIcon(path, BldIcons.class);
     }
 
-    public static final Icon Icon = load("/icons/bldIcon.svg");
+    public static final Icon Bld = load("/icons/bldIcon.svg");
+    public static final Icon Online = load("/icons/online.svg");
+    public static final Icon Offline = load("/icons/offline.svg");
 }

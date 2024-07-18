@@ -9,7 +9,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.RegisterToolWindowTask;
 import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.EventDispatcher;
@@ -58,14 +57,14 @@ public final class BldConfiguration implements Disposable {
         ApplicationManager.getApplication().invokeLater(
             () -> {
                 ToolWindowManager.getInstance(project_).registerToolWindow(BldConstants.CONSOLE_NAME, (builder) -> {
-                    builder.icon = BldIcons.Icon;
+                    builder.icon = BldIcons.Bld;
                     builder.anchor = ToolWindowAnchor.BOTTOM;
                     builder.contentFactory = new BldConsoleWindowFactory();
                     return null;
                 });
 
                 ToolWindowManager.getInstance(project_).registerToolWindow(BldConstants.PROJECT_NAME, (builder) -> {
-                    builder.icon = BldIcons.Icon;
+                    builder.icon = BldIcons.Bld;
                     builder.anchor = ToolWindowAnchor.RIGHT;
                     builder.contentFactory = new BldProjectWindowFactory();
                     return null;

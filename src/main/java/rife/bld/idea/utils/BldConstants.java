@@ -14,5 +14,6 @@ public class BldConstants {
     public static final String BLD_EXPLORER_TOOLBAR = "BldExplorerToolbar";
     public static final String WRAPPER_BUILD_ARGUMENT = "--build";
     public static final String WRAPPER_JSON_ARGUMENT = "--json";
+    public static final String WRAPPER_OFFLINE_ARGUMENT = "--offline";
     public static final Pattern BUILD_MAIN_CLASS = Pattern.compile(WRAPPER_BUILD_ARGUMENT + "\\s(\\S+)");
 }
