@@ -6,7 +6,7 @@ json = "20240303"
 changelog = "2.2.0"
 intelliJPlatform = "2.0.0-beta9"
 kotlin = "1.9.24"
-kover = "0.8.1"
+kover = "0.8.3"
 qodana = "2024.1.5"
 
 [libraries]
