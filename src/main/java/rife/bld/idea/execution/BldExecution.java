@@ -17,6 +17,7 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
 import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
@@ -116,10 +117,14 @@ public final class BldExecution {
 
         var commands = new ArrayList<BldBuildCommand>();
 
-        var json = new JSONObject(output);
-        var json_commands = json.getJSONObject("commands");
-        for (var json_command_key : json_commands.keySet()) {
-            commands.add(new BldBuildCommand(json_command_key, json_command_key, json_commands.getString(json_command_key)));
+        try {
+            var json = new JSONObject(output);
+            var json_commands = json.getJSONObject("commands");
+            for (var json_command_key : json_commands.keySet()) {
+                commands.add(new BldBuildCommand(json_command_key, json_command_key, json_commands.getString(json_command_key)));
+            }
+        } catch (JSONException e) {
+            BldConsoleManager.showTaskMessage(output + "\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
         }
 
         BldConfiguration.getInstance(project_).setBuildCommandList(commands);
