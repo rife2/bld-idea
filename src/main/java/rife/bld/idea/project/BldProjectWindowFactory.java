@@ -18,5 +18,6 @@ public class BldProjectWindowFactory implements ToolWindowFactory, DumbAware {
         var window = new BldProjectWindow(project);
         var content = ContentFactory.getInstance().createContent(window, null, false);
         toolWindow.getContentManager().addContent(content);
+        content.setDisposer(window);
     }
 }
