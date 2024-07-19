@@ -19,8 +19,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.utils.BldPluginDisposable;
 
+import java.io.File;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Service(Service.Level.PROJECT)
 public final class BldConsoleManager {
@@ -45,18 +47,20 @@ public final class BldConsoleManager {
         var executionConsole = BldConsoleManager.getConsole(project);
         // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
         Filter filter = (line, entireLength) -> {
-            Optional<ParseResult> result = ParseResult.parseErrorLocation(line);
+            Optional<ParseResult> result = ParseResult.parseErrorLocation(project, line);
             if (result.isPresent()) {
                 var linkInfo = new OpenFileHyperlinkInfo(
                         project,
                         result.get().file,
-                        result.get().lineNumber - 1, // line number is 0 indexed
-                        result.get().columnNumber // column number is 0 indexed
+                        result.get().lineNumber - 1, // 0 indexed
+                        result.get().columnNumber - 1 // 0 indexed
                 );
 
+                var startLineOffset = line.length() - result.get().linkHighlightStart;
+
                 return new Filter.Result(
-                        entireLength - line.length(),
-                        entireLength - (line.length() - result.get().linkHighlightLength),
+                        entireLength - startLineOffset,
+                        entireLength - (startLineOffset - result.get().linkHighlightLength),
                         linkInfo,
                         null // default TextAttributes
                 );
@@ -78,61 +82,85 @@ public final class BldConsoleManager {
      * Parses the result data.
      */
     static class ParseResult {
+        private static final Pattern MATCH_PATTERN = Pattern.compile(".*:\\d+:.*");
         private final int columnNumber;
         private final VirtualFile file;
         private final int lineNumber;
         private final int linkHighlightLength;
+        private final int linkHighlightStart;
 
-        private ParseResult(VirtualFile file, int lineNumber, int columnNumber, int linkHighlightLength) {
+        private ParseResult(VirtualFile file, int lineNumber, int columnNumber, int linkHighlightStart,
+                            int linkHighlightLength) {
             this.file = file;
             this.lineNumber = lineNumber;
             this.columnNumber = columnNumber;
+            this.linkHighlightStart = linkHighlightStart;
             this.linkHighlightLength = linkHighlightLength;
         }
 
         /**
          * Parses the line for errors.
          *
-         * @param line the output line
+         * @param project the project
+         * @param line    the output line
          * @return an optional {@link ParseResult} instance
          */
-        public static Optional<ParseResult> parseErrorLocation(String line) {
-            // matching lines starting with: /path/to/file:lineNumber:columNumber:...
-            if (!line.trim().matches(".*:\\d+:.*")) {
+        public static Optional<ParseResult> parseErrorLocation(Project project, String line) {
+            // matching lines containing: /path/to/file:lineNumber:
+            var matcher = MATCH_PATTERN.matcher(line.trim());
+            if (!matcher.matches()) {
                 return Optional.empty();
             }
 
-            var splitLine = line.split(":");
-            if (splitLine.length < 3) {
+            var splitBySpace = line.split(" ");
+            if (splitBySpace.length < 3) {
                 return Optional.empty();
             }
 
-            try {
-                // file path
-                var virtualFile = LocalFileSystem.getInstance().findFileByPath(splitLine[0]);
-                if (virtualFile == null) {
-                    return Optional.empty();
+            for (var splits : splitBySpace) {
+                matcher.reset(splits);
+                if (matcher.matches()) {
+                    var splitByColon = splits.split(":");
+                    // file path
+                    var file = new File(splitByColon[0]);
+                    if (!file.exists()) {
+                        file = new File(project.getBasePath(), splitByColon[0]);
+                    }
+                    var virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+                    if (virtualFile == null) {
+                        return Optional.empty();
+                    }
+
+                    var linkHighlightStart = line.indexOf(splits);
+
+                    // line number
+                    int lineNumber;
+                    try {
+                        lineNumber = Integer.parseInt(splitByColon[1]);
+                    } catch (NumberFormatException e) {
+                        return Optional.empty();
+                    }
+
+                    // path/to/file + : + lineNumber
+                    var linkHighlightLength = splitByColon[0].length() + 1 + splitByColon[1].length();
+
+                    // column number
+                    int columnNumber = 0;
+                    if (splitByColon.length >= 3) {
+                        try {
+                            columnNumber = Integer.parseInt(splitByColon[2]);
+                            // : + columNumber
+                            linkHighlightLength += 1 + splitByColon[2].length();
+                        } catch (NumberFormatException ignore) {
+                            // no column number
+                        }
+                    }
+
+                    return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber, linkHighlightStart,
+                            linkHighlightLength));
                 }
-
-                // line number
-                var lineNumber = Integer.parseInt(splitLine[1]);
-
-                // path/to/file + : + lineNumber + :
-                var linkHighlightLength = splitLine[0].length() + 1 + splitLine[1].length() + 1;
-
-                // column number
-                int columnNumber = 0;
-                try {
-                    columnNumber = Integer.parseInt(splitLine[2]);
-                    linkHighlightLength += splitLine[2].length() + 1;
-                } catch (NumberFormatException ignore) {
-                    // no column number
-                }
-
-                return Optional.of(new ParseResult(virtualFile, lineNumber, columnNumber, linkHighlightLength));
-            } catch (NumberFormatException e) {
-                return Optional.empty();
             }
+            return Optional.empty();
         }
 
         @Override
@@ -144,7 +172,19 @@ public final class BldConsoleManager {
             var other = (ParseResult) obj;
             return Objects.equals(file, other.file)
                     && Objects.equals(lineNumber, other.lineNumber)
+                    && Objects.equals(linkHighlightStart, other.linkHighlightStart)
                     && Objects.equals(linkHighlightLength, other.linkHighlightLength);
+        }
+
+        @Override
+        public String toString() {
+            return "ParseResult{" +
+                    "file=" + file +
+                    ", lineNumber=" + lineNumber +
+                    ", columnNumber=" + columnNumber +
+                    ", linkHighlightStart=" + linkHighlightStart +
+                    ", linkHighlightLength=" + linkHighlightLength +
+                    '}';
         }
     }
 }
