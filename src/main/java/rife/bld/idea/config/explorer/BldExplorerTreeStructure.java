@@ -56,25 +56,25 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
     @NotNull
     public BldNodeDescriptor createDescriptor(@NotNull Object element, NodeDescriptor parentDescriptor) {
         if (element == root_) {
-            return new BldRootNodeDescriptor(project_, parentDescriptor, root_);
+            return new BldNodeDescriptorRoot(project_, parentDescriptor, root_);
         }
         if (element == commandsFolder_) {
-            return new BldFolderNodeDescriptor(project_, parentDescriptor, commandsFolder_, BldBundle.message("bld.project.commands"));
+            return new BldNodeDescriptorFolder(project_, parentDescriptor, commandsFolder_, BldBundle.message("bld.project.commands"));
         }
         if (element == dependenciesFolder_) {
-            return new BldFolderNodeDescriptor(project_, parentDescriptor, dependenciesFolder_, BldBundle.message("bld.project.dependencies"));
+            return new BldNodeDescriptorFolder(project_, parentDescriptor, dependenciesFolder_, BldBundle.message("bld.project.dependencies"));
         }
 
         if (element instanceof BldBuildCommand) {
-            return new BldCommandNodeDescriptor(project_, parentDescriptor, (BldBuildCommand)element);
+            return new BldNodeDescriptorCommand(project_, parentDescriptor, (BldBuildCommand)element);
         }
 
         if (element instanceof String) {
-            return new BldTextNodeDescriptor(project_, parentDescriptor, (String) element);
+            return new BldNodeDescriptorText(project_, parentDescriptor, (String) element);
         }
 
         LOG.error("Unknown element for this tree structure " + element);
-        return new BldTextNodeDescriptor(project_, parentDescriptor, String.valueOf(element));
+        return new BldNodeDescriptorText(project_, parentDescriptor, String.valueOf(element));
     }
 
     @Override

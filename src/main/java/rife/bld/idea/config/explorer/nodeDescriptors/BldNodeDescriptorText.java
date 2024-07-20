@@ -9,8 +9,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.ui.JBColor;
 import org.jetbrains.annotations.Nls;
 
-public final class BldTextNodeDescriptor extends BldNodeDescriptor {
-    public BldTextNodeDescriptor(Project project, NodeDescriptor parentDescriptor, @Nls String text) {
+public final class BldNodeDescriptorText extends BldNodeDescriptor {
+    public BldNodeDescriptorText(Project project, NodeDescriptor parentDescriptor, @Nls String text) {
         super(project, parentDescriptor);
         myName = text;
         myColor = JBColor.blue;

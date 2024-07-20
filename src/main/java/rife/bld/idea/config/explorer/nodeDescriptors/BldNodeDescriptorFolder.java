@@ -12,20 +12,18 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.CellAppearanceEx;
 import com.intellij.openapi.roots.ui.util.CompositeAppearance;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
-import rife.bld.idea.config.BldBuildCommand;
 
 import java.awt.*;
 
-public final class BldFolderNodeDescriptor extends BldNodeDescriptor {
+public final class BldNodeDescriptorFolder extends BldNodeDescriptor {
     private final Object folder_;
     private final String name_;
     private CompositeAppearance highlightedText_;
 
-    public BldFolderNodeDescriptor(final Project project, final NodeDescriptor parentDescriptor, final Object folder, final String name) {
+    public BldNodeDescriptorFolder(final Project project, final NodeDescriptor parentDescriptor, final Object folder, final String name) {
         super(project, parentDescriptor);
         folder_ = folder;
         name_ = name;

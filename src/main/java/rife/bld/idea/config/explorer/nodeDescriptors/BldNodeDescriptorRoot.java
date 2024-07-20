@@ -7,10 +7,10 @@ package rife.bld.idea.config.explorer.nodeDescriptors;
 import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.project.Project;
 
-public final class BldRootNodeDescriptor extends BldNodeDescriptor {
+public final class BldNodeDescriptorRoot extends BldNodeDescriptor {
     private final Object root_;
 
-    public BldRootNodeDescriptor(Project project, NodeDescriptor parentDescriptor, Object root) {
+    public BldNodeDescriptorRoot(Project project, NodeDescriptor parentDescriptor, Object root) {
         super(project, parentDescriptor);
         root_ = root;
     }

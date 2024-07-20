@@ -29,7 +29,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfigurationListener;
-import rife.bld.idea.config.explorer.nodeDescriptors.BldCommandNodeDescriptor;
+import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptorCommand;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.config.BldConfiguration;
@@ -195,7 +195,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         for (final TreePath path : paths) {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
             final Object userObject = node.getUserObject();
-            return userObject instanceof  BldCommandNodeDescriptor;
+            return userObject instanceof BldNodeDescriptorCommand;
         }
         return true;
     }
@@ -207,10 +207,10 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         final List<String> targets = new ArrayList<>();
         for (final TreePath path : paths) {
             final Object userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
-            if (!(userObject instanceof BldCommandNodeDescriptor)) {
+            if (!(userObject instanceof BldNodeDescriptorCommand)) {
                 continue;
             }
-            final BldBuildCommand target = ((BldCommandNodeDescriptor)userObject).getCommand();
+            final BldBuildCommand target = ((BldNodeDescriptorCommand)userObject).getCommand();
             targets.add(target.name());
         }
         return targets;

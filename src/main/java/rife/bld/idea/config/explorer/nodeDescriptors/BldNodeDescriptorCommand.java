@@ -19,11 +19,11 @@ import rife.bld.idea.config.BldBuildCommand;
 
 import java.awt.*;
 
-public final class BldCommandNodeDescriptor extends BldNodeDescriptor {
+public final class BldNodeDescriptorCommand extends BldNodeDescriptor {
     private final BldBuildCommand command_;
     private CompositeAppearance highlightedText_;
 
-    public BldCommandNodeDescriptor(final Project project, final NodeDescriptor parentDescriptor, final BldBuildCommand command) {
+    public BldNodeDescriptorCommand(final Project project, final NodeDescriptor parentDescriptor, final BldBuildCommand command) {
         super(project, parentDescriptor);
         command_ = command;
         highlightedText_ = new CompositeAppearance();
