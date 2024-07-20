@@ -5,14 +5,11 @@
 package rife.bld.idea.console;
 
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.errorTreeView.NewErrorTreeRenderer;
 import com.intellij.ide.errorTreeView.impl.ErrorTreeViewConfiguration;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AutoScrollToSourceHandler;
 import com.intellij.ui.IdeBorderFactory;
@@ -21,8 +18,6 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.EditSourceOnDoubleClickHandler;
 import com.intellij.util.ui.tree.TreeUtil;
 import org.jetbrains.annotations.NotNull;
-import rife.bld.idea.execution.BldExecution;
-import rife.bld.idea.utils.BldBundle;
 import rife.bld.idea.utils.BldConstants;
 
 import javax.swing.*;
@@ -89,60 +84,10 @@ public class BldConsoleViewPanel extends JPanel {
         };
     }
 
-    private static class StopAction extends DumbAwareAction {
-        public StopAction() {
-            super(IdeBundle.message("action.stop"), null, AllIcons.Actions.Suspend);
-        }
-
-        @Override
-        public void actionPerformed(AnActionEvent e) {
-            var project = e.getProject();
-            if (project != null) {
-                BldExecution.getInstance(project).terminateBldProcess();
-                BldConsoleManager.getConsole(project).print(BldBundle.message("bld.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
-            }
-        }
-
-        @Override
-        public void update(AnActionEvent event) {
-            // Make the action only clickable when there is an active bld process
-            var presentation = event.getPresentation();
-            var project = event.getProject();
-            if (project == null) {
-                return;
-            }
-            presentation.setEnabled(BldExecution.getInstance(project).hasActiveBldProcess());
-        }
-
-        @Override
-        public @NotNull ActionUpdateThread getActionUpdateThread() {
-            return ActionUpdateThread.BGT;
-        }
-    }
-
-    private static class ClearAction extends DumbAwareAction {
-        public ClearAction() {
-            super(IdeBundle.message("terminal.action.ClearBuffer.text"), null, AllIcons.Actions.GC);
-        }
-
-        @Override
-        public void actionPerformed(AnActionEvent e) {
-            var project = e.getProject();
-            if (project != null) {
-                BldConsoleManager.getConsole(project).clear();
-            }
-        }
-
-        @Override
-        public @NotNull ActionUpdateThread getActionUpdateThread() {
-            return ActionUpdateThread.BGT;
-        }
-    }
-
     private JPanel createToolbarPanel() {
         var group = new DefaultActionGroup();
-        group.add(new StopAction());
-        group.add(new ClearAction());
+        group.add(new BldConsoleStopAction());
+        group.add(new BldConsoleClearAction());
 
         var toolbar_panel = new JPanel(new BorderLayout());
         var action_manager = ActionManager.getInstance();
