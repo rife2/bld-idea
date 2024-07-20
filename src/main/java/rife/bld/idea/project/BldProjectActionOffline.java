@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectOfflineAction extends ToggleAction implements DumbAware {
+final class BldProjectActionOffline extends ToggleAction implements DumbAware {
     private final Project project_;
 
-    public BldProjectOfflineAction(Project project) {
+    public BldProjectActionOffline(Project project) {
         super(BldBundle.messagePointer("bld.action.offline.name"),
             BldBundle.messagePointer("bld.action.offline.description"), AllIcons.Actions.OfflineMode);
         project_ = project;

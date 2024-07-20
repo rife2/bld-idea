@@ -14,8 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
 
-class BldConsoleStopAction extends DumbAwareAction {
-    public BldConsoleStopAction() {
+class BldConsoleActionStop extends DumbAwareAction {
+    public BldConsoleActionStop() {
         super(IdeBundle.message("action.stop"), null, AllIcons.Actions.Suspend);
     }
 

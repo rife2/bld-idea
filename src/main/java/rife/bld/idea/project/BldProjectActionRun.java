@@ -12,10 +12,10 @@ import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectRunAction extends AnAction implements DumbAware {
+final class BldProjectActionRun extends AnAction implements DumbAware {
     private final BldProjectWindow projectWindow_;
 
-    public BldProjectRunAction(BldProjectWindow projectWindow) {
+    public BldProjectActionRun(BldProjectWindow projectWindow) {
         super(BldBundle.messagePointer("bld.action.run.name"),
             BldBundle.messagePointer("bld.action.run.description"), AllIcons.Actions.Execute);
 

@@ -127,15 +127,15 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
     private JPanel createToolbarPanel() {
         final var group = new DefaultActionGroup();
-        group.add(new BldProjectRefreshAction(project_));
-        group.add(new BldProjectRunAction(this));
+        group.add(new BldProjectActionRefresh(project_));
+        group.add(new BldProjectActionRun(this));
         group.addSeparator();
-        group.add(new BldProjectEditMainAction(project_));
-        group.add(new BldProjectEditPropertiesAction(project_));
+        group.add(new BldProjectActionEditMain(project_));
+        group.add(new BldProjectActionEditProperties(project_));
         group.addSeparator();
-        group.add(new BldProjectClearCacheAction(project_));
+        group.add(new BldProjectActionClearCache(project_));
         group.addSeparator();
-        group.add(new BldProjectOfflineAction(project_));
+        group.add(new BldProjectActionOffline(project_));
 
         final var action_toolbar = ActionManager.getInstance().createActionToolbar(BldConstants.BLD_EXPLORER_TOOLBAR, group, true);
         action_toolbar.setTargetComponent(this);

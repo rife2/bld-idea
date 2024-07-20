@@ -19,10 +19,10 @@ import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectRefreshAction extends AnAction implements DumbAware {
+final class BldProjectActionRefresh extends AnAction implements DumbAware {
     private final Project project_;
 
-    public BldProjectRefreshAction(Project project) {
+    public BldProjectActionRefresh(Project project) {
         super(BldBundle.messagePointer("bld.action.refresh.name"),
             BldBundle.messagePointer("bld.action.refresh.description"), AllIcons.Actions.Refresh);
         project_ = project;

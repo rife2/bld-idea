@@ -11,8 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import org.jetbrains.annotations.NotNull;
 
-class BldConsoleClearAction extends DumbAwareAction {
-    public BldConsoleClearAction() {
+class BldConsoleActionClear extends DumbAwareAction {
+    public BldConsoleActionClear() {
         super(IdeBundle.message("terminal.action.ClearBuffer.text"), null, AllIcons.Actions.GC);
     }
 

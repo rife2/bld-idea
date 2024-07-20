@@ -17,10 +17,10 @@ import rife.bld.idea.utils.BldBundle;
 
 import java.io.IOException;
 
-final class BldProjectClearCacheAction extends AnAction implements DumbAware {
+final class BldProjectActionClearCache extends AnAction implements DumbAware {
     private final Project project_;
 
-    public BldProjectClearCacheAction(Project project) {
+    public BldProjectActionClearCache(Project project) {
         super(BldBundle.messagePointer("bld.action.clearCache.name"),
             BldBundle.messagePointer("bld.action.clearCache.description"), AllIcons.Actions.GC);
 
