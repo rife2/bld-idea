@@ -16,6 +16,8 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.console.BldConsoleManager;
+import rife.bld.idea.execution.BldExecuteDependencyTree;
+import rife.bld.idea.execution.BldExecuteListCommands;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
 
@@ -37,7 +39,9 @@ final class BldProjectActionRefresh extends AnAction implements DumbAware {
             public void run(@NotNull ProgressIndicator indicator) {
                 BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.refresh"), ConsoleViewContentType.USER_INPUT, project_);
 
-                BldExecution.getInstance(project_).listTasks();
+                var execution = BldExecution.getInstance(project_);
+                BldExecuteListCommands.run(execution);
+                BldExecuteDependencyTree.run(execution);
             }
         }.queue();
     }

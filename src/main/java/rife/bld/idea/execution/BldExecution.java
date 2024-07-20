@@ -17,8 +17,6 @@ import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.utils.BldConstants;
@@ -29,8 +27,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.json.JSONObject;
 
 import static rife.bld.idea.utils.BldConstants.*;
 
@@ -50,6 +46,10 @@ public final class BldExecution {
 
     public static BldExecution getInstance(final @NotNull Project project) {
         return project.getService(BldExecution.class);
+    }
+
+    public Project project() {
+        return project_;
     }
 
     public void setOffline(boolean flag) {
@@ -118,35 +118,11 @@ public final class BldExecution {
         BldConfiguration.getInstance(project_).setupComplete();
     }
 
-    public void listTasks() {
-        var output = String.join("", executeCommands(true, "help", WRAPPER_JSON_ARGUMENT));
-        if (output.isEmpty()) {
-            BldConsoleManager.showTaskMessage("Failed to detect the bld commands.\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
-            return;
-        }
-        
-        BldConsoleManager.showTaskMessage("Detected the bld commands\n", ConsoleViewContentType.SYSTEM_OUTPUT, project_);
-
-        var commands = new ArrayList<BldBuildCommand>();
-
-        try {
-            var json = new JSONObject(output);
-            var json_commands = json.getJSONObject("commands");
-            for (var json_command_key : json_commands.keySet()) {
-                commands.add(new BldBuildCommand(json_command_key, json_command_key, json_commands.getString(json_command_key)));
-            }
-        } catch (JSONException e) {
-            BldConsoleManager.showTaskMessage(output + "\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
-        }
-
-        BldConfiguration.getInstance(project_).setBuildCommandList(commands);
+    public List<String> executeCommands(BldExecutionFlags flags, String... commands) {
+        return executeCommands(flags, Arrays.asList(commands));
     }
 
-    public List<String> executeCommands(boolean captureJson, String... commands) {
-        return executeCommands(captureJson, Arrays.asList(commands));
-    }
-
-    public List<String> executeCommands(boolean captureJson, List<String> commands) {
+    public List<String> executeCommands(BldExecutionFlags flags, List<String> commands) {
         if (projectDir_ == null || bldMainClass_ == null) {
             return Collections.emptyList();
         }
@@ -185,15 +161,16 @@ public final class BldExecution {
                 super.onTextAvailable(event, outputType);
                 if (!outputType.equals(ProcessOutputType.SYSTEM)) {
                     var text = event.getText();
-                    if (captureJson && !jsonStarted_) {
+                    if (flags.commands() && !jsonStarted_) {
                         if (text.trim().startsWith("{")) {
                             jsonStarted_ = true;
                         }
                     }
-                    if (!jsonStarted_) {
+                    if (!jsonStarted_ && !flags.dependencyTree()) {
                         BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project_);
                     }
-                    if (!captureJson || jsonStarted_) {
+
+                    if (!flags.commands() || jsonStarted_) {
                         output.add(event.getText());
                     }
                 }

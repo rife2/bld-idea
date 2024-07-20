@@ -10,14 +10,18 @@ import kotlin.Unit;
 import kotlin.coroutines.Continuation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rife.bld.idea.execution.BldExecuteListCommands;
+import rife.bld.idea.execution.BldExecuteDependencyTree;
 import rife.bld.idea.execution.BldExecution;
 
 public class ProjectOpenStartupActivity implements ProjectActivity {
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
-        BldExecution.getInstance(project).setupProject();
-        BldExecution.getInstance(project).listTasks();
+        var execution = BldExecution.getInstance(project);
+        execution.setupProject();
+        BldExecuteListCommands.run(execution);
+        BldExecuteDependencyTree.run(execution);
         return null;
     }
 }

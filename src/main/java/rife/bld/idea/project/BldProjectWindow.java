@@ -35,6 +35,7 @@ import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.BldExplorerTreeStructure;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptor;
+import rife.bld.idea.execution.BldExecutionFlags;
 import rife.bld.idea.utils.BldBundle;
 import rife.bld.idea.utils.BldConstants;
 
@@ -176,7 +177,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", commands_info), ConsoleViewContentType.USER_INPUT, project_);
-                BldExecution.getInstance(project_).executeCommands(false, commands);
+                BldExecution.getInstance(project_).executeCommands(new BldExecutionFlags(), commands);
             }
         }.queue();
 

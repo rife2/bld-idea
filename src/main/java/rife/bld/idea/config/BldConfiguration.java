@@ -15,6 +15,7 @@ import com.intellij.util.EventDispatcher;
 import icons.BldIcons;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.console.BldConsoleWindowFactory;
+import rife.bld.idea.execution.BldDependencyTree;
 import rife.bld.idea.project.BldProjectWindowFactory;
 import rife.bld.idea.utils.BldConstants;
 
@@ -25,8 +26,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Service(Service.Level.PROJECT)
 public final class BldConfiguration implements Disposable {
     private final Project project_;
-    private final List<BldBuildCommand> buildCommands_ = new CopyOnWriteArrayList<>();
     private final EventDispatcher<BldConfigurationListener> eventDispatcher_ = EventDispatcher.create(BldConfigurationListener.class);
+
+    private final List<BldBuildCommand> commands_ = new CopyOnWriteArrayList<>();
+    private final BldDependencyTree dependencyTree_ = new BldDependencyTree();
 
     private volatile boolean initialized_ = false;
 
@@ -47,8 +50,22 @@ public final class BldConfiguration implements Disposable {
         return initialized_;
     }
 
-    public List<BldBuildCommand> getBuildCommandList() {
-        return buildCommands_;
+    public List<BldBuildCommand> getCommands() {
+        return commands_;
+    }
+
+    public BldDependencyTree getDependencyTree() {
+        return dependencyTree_;
+    }
+
+    public void setDependencyTree(BldDependencyTree tree) {
+        dependencyTree_.clear();
+        dependencyTree_.addAll(tree);
+
+        ApplicationManager.getApplication().invokeLater(
+            () -> eventDispatcher_.getMulticaster().configurationChanged(),
+            ModalityState.any()
+        );
     }
 
     public void setupComplete() {
@@ -76,9 +93,10 @@ public final class BldConfiguration implements Disposable {
         );
     }
 
-    public void setBuildCommandList(ArrayList<BldBuildCommand> commands) {
-        buildCommands_.clear();
-        buildCommands_.addAll(commands);
+    public void setCommands(List<BldBuildCommand> commands) {
+        commands_.clear();
+        commands_.addAll(commands);
+
         ApplicationManager.getApplication().invokeLater(
             () -> eventDispatcher_.getMulticaster().configurationChanged(),
             ModalityState.any()

@@ -16,6 +16,8 @@ import org.jetbrains.annotations.Nullable;
 import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.nodeDescriptors.*;
+import rife.bld.idea.execution.BldDependencyNode;
+import rife.bld.idea.execution.BldDependencyTree;
 import rife.bld.idea.utils.BldBundle;
 
 import java.util.ArrayList;
@@ -49,7 +51,10 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
 
     @Override
     public boolean isAlwaysLeaf(@NotNull Object element) {
-        return element != root_ && element != commandsFolder_ && element != dependenciesFolder_;
+        return element != root_ &&
+            element != commandsFolder_ &&
+            element != dependenciesFolder_ &&
+            !(element instanceof BldDependencyNode);
     }
 
     @Override
@@ -65,8 +70,12 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
             return new BldNodeDescriptorFolder(project_, parentDescriptor, dependenciesFolder_, BldBundle.message("bld.project.dependencies"));
         }
 
-        if (element instanceof BldBuildCommand) {
-            return new BldNodeDescriptorCommand(project_, parentDescriptor, (BldBuildCommand)element);
+        if (element instanceof BldBuildCommand command) {
+            return new BldNodeDescriptorCommand(project_, parentDescriptor, command);
+        }
+
+        if (element instanceof BldDependencyNode node) {
+            return new BldNodeDescriptorDependency(project_, parentDescriptor, node);
         }
 
         if (element instanceof String) {
@@ -88,14 +97,17 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
         }
 
         if (element == commandsFolder_) {
-            final var commands = new ArrayList<>(configuration.getBuildCommandList());
+            final var commands = new ArrayList<>(configuration.getCommands());
             commands.sort(commandComparator);
             return commands.toArray(new BldBuildCommand[0]);
         }
 
         if (element == dependenciesFolder_) {
-            // todo
-            return ArrayUtilRt.EMPTY_OBJECT_ARRAY;
+            return configuration.getDependencyTree().toArray(new BldDependencyNode[0]);
+        }
+
+        if (element instanceof BldDependencyNode node) {
+            return node.children().toArray(new BldDependencyNode[0]);
         }
 
         return ArrayUtilRt.EMPTY_OBJECT_ARRAY;
@@ -114,6 +126,13 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
 
         if (element == dependenciesFolder_) {
             return root_;
+        }
+
+        if (element instanceof BldDependencyNode node) {
+            if (node.parent() == null) {
+                return dependenciesFolder_;
+            }
+            return node.parent();
         }
 
         return null;
@@ -140,5 +159,4 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
     public Object getRootElement() {
         return root_;
     }
-
 }
