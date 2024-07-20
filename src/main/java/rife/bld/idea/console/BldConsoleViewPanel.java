@@ -71,7 +71,7 @@ public class BldConsoleViewPanel extends JPanel {
         scroll_pane.setBorder(IdeBorderFactory.createBorder(SideBorder.LEFT));
         message_panel.add(console.getComponent(), BorderLayout.CENTER);
 
-        add(createToolbarPanel(), BorderLayout.WEST);
+        add(createToolbarPanel(), BorderLayout.EAST);
 
         add(message_panel, BorderLayout.CENTER);
 
@@ -120,17 +120,35 @@ public class BldConsoleViewPanel extends JPanel {
         }
     }
 
-    private JPanel createToolbarPanel() {
-        var action = new StopAction();
+    private static class ClearAction extends DumbAwareAction {
+        public ClearAction() {
+            super(IdeBundle.message("terminal.action.ClearBuffer.text"), null, AllIcons.Actions.GC);
+        }
 
+        @Override
+        public void actionPerformed(AnActionEvent e) {
+            var project = e.getProject();
+            if (project != null) {
+                BldConsoleManager.getConsole(project).clear();
+            }
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.BGT;
+        }
+    }
+
+    private JPanel createToolbarPanel() {
         var group = new DefaultActionGroup();
-        group.add(action);
+        group.add(new StopAction());
+        group.add(new ClearAction());
 
         var toolbar_panel = new JPanel(new BorderLayout());
         var action_manager = ActionManager.getInstance();
         var left_toolbar = action_manager.createActionToolbar(BldConstants.BLD_CONSOLE_TOOLBAR, group, false);
         left_toolbar.setTargetComponent(this);
-        toolbar_panel.add(left_toolbar.getComponent(), BorderLayout.WEST);
+        toolbar_panel.add(left_toolbar.getComponent(), BorderLayout.EAST);
 
         return toolbar_panel;
     }
