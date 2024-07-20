@@ -88,6 +88,18 @@ public final class BldExecution {
         return getBldProperties() != null;
     }
 
+    public VirtualFile getBldCache() {
+        var lib = projectDir_.findChild("lib");
+        if (lib == null) return null;
+        var bld = lib.findChild("bld");
+        if (bld == null) return null;
+        return bld.findChild("bld.cache");
+    }
+
+    public boolean hasBldCache() {
+        return getBldCache() != null;
+    }
+
     public void setupProject() {
         projectDir_ = ProjectUtil.guessProjectDir(project_);
         if (projectDir_ == null) {
@@ -191,6 +203,8 @@ public final class BldExecution {
         runningBldProcesses_.put(project_, process);
         process_handler.runProcess();
         runningBldProcesses_.remove(project_, process);
+
+        projectDir_.refresh(true, true);
 
         return output;
     }
