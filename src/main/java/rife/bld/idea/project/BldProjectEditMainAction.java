@@ -17,8 +17,8 @@ final class BldProjectEditMainAction extends AnAction implements DumbAware {
     private final Project project_;
 
     public BldProjectEditMainAction(Project project) {
-        super(BldBundle.messagePointer("edit.bld.command.action.name"),
-            BldBundle.messagePointer("edit.bld.command.action.description"), AllIcons.Actions.Edit);
+        super(BldBundle.messagePointer("bld.action.edit.name"),
+            BldBundle.messagePointer("bld.action.edit.description"), AllIcons.Actions.Edit);
 
         project_ = project;
     }
@@ -35,7 +35,7 @@ final class BldProjectEditMainAction extends AnAction implements DumbAware {
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("edit.bld.command.action.name"));
+        presentation.setText(BldBundle.messagePointer("bld.action.edit.name"));
         presentation.setEnabled(true);
     }
 

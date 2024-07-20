@@ -7,8 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.search.GlobalSearchScope;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.utils.BldBundle;
@@ -17,8 +15,8 @@ final class BldProjectEditPropertiesAction extends AnAction implements DumbAware
     private final Project project_;
 
     public BldProjectEditPropertiesAction(Project project) {
-        super(BldBundle.messagePointer("properties.bld.command.action.name"),
-            BldBundle.messagePointer("properties.bld.command.action.description"), AllIcons.Actions.EditScheme);
+        super(BldBundle.messagePointer("bld.action.properties.name"),
+            BldBundle.messagePointer("bld.action.properties.description"), AllIcons.Actions.EditScheme);
 
         project_ = project;
     }
@@ -34,7 +32,7 @@ final class BldProjectEditPropertiesAction extends AnAction implements DumbAware
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("properties.bld.command.action.name"));
+        presentation.setText(BldBundle.messagePointer("bld.action.properties.name"));
         presentation.setEnabled(BldExecution.getInstance(project_).hasBldProperties());
     }
 

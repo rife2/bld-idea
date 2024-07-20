@@ -19,8 +19,8 @@ final class BldProjectRefreshAction extends AnAction implements DumbAware {
     private final Project project_;
 
     public BldProjectRefreshAction(Project project) {
-        super(BldBundle.messagePointer("refresh.bld.command.action.name"),
-            BldBundle.messagePointer("refresh.bld.command.action.description"), AllIcons.Actions.Refresh);
+        super(BldBundle.messagePointer("bld.action.refresh.name"),
+            BldBundle.messagePointer("bld.action.refresh.description"), AllIcons.Actions.Refresh);
         project_ = project;
     }
 
@@ -41,7 +41,7 @@ final class BldProjectRefreshAction extends AnAction implements DumbAware {
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("refresh.bld.command.action.name"));
+        presentation.setText(BldBundle.messagePointer("bld.action.refresh.name"));
         presentation.setEnabled(true);
     }
 

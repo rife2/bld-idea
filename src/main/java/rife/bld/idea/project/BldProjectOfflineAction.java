@@ -12,8 +12,8 @@ final class BldProjectOfflineAction extends ToggleAction implements DumbAware {
     private final Project project_;
 
     public BldProjectOfflineAction(Project project) {
-        super(BldBundle.messagePointer("offline.bld.command.action.name"),
-            BldBundle.messagePointer("offline.bld.command.action.description"), AllIcons.Actions.OfflineMode);
+        super(BldBundle.messagePointer("bld.action.offline.name"),
+            BldBundle.messagePointer("bld.action.offline.description"), AllIcons.Actions.OfflineMode);
         project_ = project;
     }
 
@@ -38,7 +38,7 @@ final class BldProjectOfflineAction extends ToggleAction implements DumbAware {
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("offline.bld.command.action.name"));
+        presentation.setText(BldBundle.messagePointer("bld.action.offline.name"));
     }
 
     @Override

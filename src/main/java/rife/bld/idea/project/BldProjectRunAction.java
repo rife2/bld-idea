@@ -12,8 +12,8 @@ final class BldProjectRunAction extends AnAction implements DumbAware {
     private final BldProjectWindow projectWindow_;
 
     public BldProjectRunAction(BldProjectWindow projectWindow) {
-        super(BldBundle.messagePointer("run.bld.command.action.name"),
-            BldBundle.messagePointer("run.bld.command.action.description"), AllIcons.Actions.Execute);
+        super(BldBundle.messagePointer("bld.action.run.name"),
+            BldBundle.messagePointer("bld.action.run.description"), AllIcons.Actions.Execute);
 
         projectWindow_ = projectWindow;
     }
@@ -26,7 +26,7 @@ final class BldProjectRunAction extends AnAction implements DumbAware {
     @Override
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("run.bld.command.action.name"));
+        presentation.setText(BldBundle.messagePointer("bld.action.run.name"));
         presentation.setEnabled(true);
         presentation.setEnabled(projectWindow_.canRunSelection());
     }
