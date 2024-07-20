@@ -17,8 +17,10 @@ The `bld` IDEA plugin supports:
 * reloading the commands in the `bld` project
 * terminating currently running `bld` commands
 * `bld` console panel for command output with source code hyperlinking
+* display of the `bld` dependency tree
 * toggle to run `bld` in offline or online mode
 * auto-save all open files before executing a `bld` command
+* convenient `bld` one-click cache invalidation
 
 <!-- Plugin description end -->
 
