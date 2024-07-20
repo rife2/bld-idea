@@ -130,11 +130,11 @@ public final class BldExecution {
         BldConfiguration.getInstance(project_).setBuildCommandList(commands);
     }
 
-    public List<String> executeCommands(boolean silent, String... commands) {
-        return executeCommands(silent, Arrays.asList(commands));
+    public List<String> executeCommands(boolean captureJson, String... commands) {
+        return executeCommands(captureJson, Arrays.asList(commands));
     }
 
-    public List<String> executeCommands(boolean silent, List<String> commands) {
+    public List<String> executeCommands(boolean captureJson, List<String> commands) {
         if (projectDir_ == null || bldMainClass_ == null) {
             return Collections.emptyList();
         }
@@ -166,14 +166,24 @@ public final class BldExecution {
         final var process_handler = new CapturingAnsiEscapesAwareProcessHandler(process, command_line.getCommandLineString());
         final var output = new ArrayList<String>();
         process_handler.addProcessListener(new ProcessAdapter() {
+            boolean jsonStarted_ = false;
+
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
                 super.onTextAvailable(event, outputType);
                 if (!outputType.equals(ProcessOutputType.SYSTEM)) {
-                    if (!silent) {
+                    var text = event.getText();
+                    if (captureJson && !jsonStarted_) {
+                        if (text.trim().startsWith("{")) {
+                            jsonStarted_ = true;
+                        }
+                    }
+                    if (!jsonStarted_) {
                         BldConsoleManager.showTaskMessage(event.getText(), ConsoleViewContentType.NORMAL_OUTPUT, project_);
                     }
-                    output.add(event.getText());
+                    if (!captureJson || jsonStarted_) {
+                        output.add(event.getText());
+                    }
                 }
             }
         });
