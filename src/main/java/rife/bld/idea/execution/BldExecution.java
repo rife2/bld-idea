@@ -67,7 +67,25 @@ public final class BldExecution {
     public void terminateBldProcess() {
         var process = runningBldProcesses_.get(project_);
         if (process != null) {
+            process.descendants().forEach(ProcessHandle::destroy);
+
             process.destroy();
+            try {
+                process.getInputStream().close();
+            } catch (IOException e) {
+                // no-op
+            }
+            try {
+                process.getOutputStream().close();
+            } catch (IOException e) {
+                // no-op
+            }
+            try {
+                process.getErrorStream().close();
+            } catch (IOException e) {
+                // no-op
+            }
+
             runningBldProcesses_.remove(project_, process);
         }
     }
