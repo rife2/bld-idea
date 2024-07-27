@@ -29,7 +29,7 @@ final class BldProjectActionEditMain extends AnAction implements DumbAware {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        var main_class = BldExecution.getInstance(project_).getBldMainClass();
+        var main_class = BldExecution.instance(project_).getBldMainClass();
         var psi_class = JavaPsiFacade.getInstance(project_).findClass(main_class, GlobalSearchScope.allScope(project_));
         if (psi_class != null) {
             FileEditorManager.getInstance(project_).openFile(psi_class.getContainingFile().getVirtualFile());

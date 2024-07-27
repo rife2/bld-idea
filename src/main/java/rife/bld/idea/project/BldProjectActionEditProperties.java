@@ -27,7 +27,7 @@ final class BldProjectActionEditProperties extends AnAction implements DumbAware
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        var properties = BldExecution.getInstance(project_).getBldProperties();
+        var properties = BldExecution.instance(project_).getBldProperties();
         if (properties != null) {
             FileEditorManager.getInstance(project_).openFile(properties);
         }
@@ -37,7 +37,7 @@ final class BldProjectActionEditProperties extends AnAction implements DumbAware
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
         presentation.setText(BldBundle.messagePointer("bld.action.properties.name"));
-        presentation.setEnabled(BldExecution.getInstance(project_).hasBldProperties());
+        presentation.setEnabled(BldExecution.instance(project_).hasBldProperties());
     }
 
     @Override

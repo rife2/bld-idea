@@ -12,12 +12,13 @@ import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static rife.bld.idea.utils.BldConstants.WRAPPER_JSON_ARGUMENT;
 
 public abstract class BldExecuteListCommands {
     public static void run(BldExecution execution) {
-        var output = String.join("", execution.executeCommands(new BldExecutionFlags().commands(true), "help", WRAPPER_JSON_ARGUMENT));
+        var output = String.join("", execution.executeCommands(new BldExecutionFlags().commands(true), List.of("help", WRAPPER_JSON_ARGUMENT)));
         if (output.isEmpty()) {
             BldConsoleManager.showTaskMessage("Failed to detect the bld commands.\n", ConsoleViewContentType.ERROR_OUTPUT, execution.project());
             return;
@@ -37,6 +38,6 @@ public abstract class BldExecuteListCommands {
             BldConsoleManager.showTaskMessage(output + "\n", ConsoleViewContentType.ERROR_OUTPUT, execution.project());
         }
 
-        BldConfiguration.getInstance(execution.project()).setCommands(commands);
+        BldConfiguration.instance(execution.project()).setCommands(commands);
     }
 }

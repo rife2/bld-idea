@@ -29,7 +29,7 @@ final class BldProjectActionClearCache extends AnAction implements DumbAware {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        var cache = BldExecution.getInstance(project_).getBldCache();
+        var cache = BldExecution.instance(project_).getBldCache();
         if (cache != null) {
             ApplicationManager.getApplication().runWriteAction(
                 () -> {
@@ -47,7 +47,7 @@ final class BldProjectActionClearCache extends AnAction implements DumbAware {
     public void update(@NotNull AnActionEvent event) {
         final var presentation = event.getPresentation();
         presentation.setText(BldBundle.messagePointer("bld.action.clearCache.name"));
-        presentation.setEnabled(BldExecution.getInstance(project_).hasBldCache());
+        presentation.setEnabled(BldExecution.instance(project_).hasBldCache());
     }
 
     @Override

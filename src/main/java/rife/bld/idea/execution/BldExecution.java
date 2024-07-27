@@ -8,10 +8,7 @@ import com.intellij.execution.CantRunException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.SimpleJavaParameters;
-import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessOutputType;
+import com.intellij.execution.process.*;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
@@ -20,13 +17,13 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.utils.BldConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -47,7 +44,7 @@ public final class BldExecution {
         project_ =  project;
     }
 
-    public static BldExecution getInstance(final @NotNull Project project) {
+    public static BldExecution instance(final @NotNull Project project) {
         return project.getService(BldExecution.class);
     }
 
@@ -136,51 +133,31 @@ public final class BldExecution {
 
         BldConsoleManager.showTaskMessage("Found bld main class: " + bldMainClass_ + "\n", ConsoleViewContentType.SYSTEM_OUTPUT, project_);
 
-        BldConfiguration.getInstance(project_).setupComplete();
+        BldConfiguration.instance(project_).setupComplete();
     }
 
-    public List<String> executeCommands(BldExecutionFlags flags, String... commands) {
-        return executeCommands(flags, Arrays.asList(commands));
+    public List<String> executeCommands(BldExecutionFlags flags, String command) {
+        return executeCommands(flags, command, BldBuildListener.DUMMY);
+    }
+
+    public List<String> executeCommands(BldExecutionFlags flags, String command, BldBuildListener listener) {
+        return executeCommands(flags, List.of(command), listener);
+    }
+
+    public List<String> executeCommands(BldExecutionFlags flags, BldBuildCommand command, BldBuildListener listener) {
+        return executeCommands(flags, List.of(command.name()), listener);
     }
 
     public List<String> executeCommands(BldExecutionFlags flags, List<String> commands) {
-        if (projectDir_ == null || bldMainClass_ == null) {
+        return executeCommands(flags, commands, BldBuildListener.DUMMY);
+    }
+
+    public List<String> executeCommands(BldExecutionFlags flags, List<String> commands, BldBuildListener listener) {
+        var process_handler = createProcessHandler(commands, Collections.emptyList(), listener);
+        if (process_handler == null) {
             return Collections.emptyList();
         }
 
-        var java_parameters = new SimpleJavaParameters();
-        java_parameters.setJdk(ProjectRootManager.getInstance(project_).getProjectSdk());
-        java_parameters.setWorkingDirectory(projectDir_.getCanonicalPath());
-        java_parameters.setJarPath(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
-        var program_parameters = java_parameters.getProgramParametersList();
-        program_parameters.add(projectDir_.getCanonicalPath() + "/bld");
-        program_parameters.add(WRAPPER_BUILD_ARGUMENT);
-        program_parameters.add(bldMainClass_);
-        if (offline_) {
-            program_parameters.add(WRAPPER_OFFLINE_ARGUMENT);
-        }
-        if (commands != null) {
-            program_parameters.addAll(commands);
-        }
-
-        GeneralCommandLine command_line;
-        try {
-            command_line = java_parameters.toCommandLine();
-        } catch (CantRunException e) {
-            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
-            return Collections.emptyList();
-        }
-
-        final Process process;
-        try {
-            process = command_line.createProcess();
-        }
-        catch (ExecutionException e) {
-            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
-            return Collections.emptyList();
-        }
-
-        final var process_handler = new CapturingAnsiEscapesAwareProcessHandler(process, command_line.getCommandLineString());
         final var output = new ArrayList<String>();
         process_handler.addProcessListener(new ProcessAdapter() {
             boolean jsonStarted_ = false;
@@ -206,13 +183,67 @@ public final class BldExecution {
             }
         });
 
-        runningBldProcesses_.put(project_, process);
-        process_handler.runProcess();
-        runningBldProcesses_.remove(project_, process);
+        runningBldProcesses_.put(project_, process_handler.getProcess());
+        try {
+            process_handler.runProcess();
+        }
+        finally {
+            runningBldProcesses_.remove(project_, process_handler.getProcess());
 
-        projectDir_.refresh(true, true);
+            listener.buildFinished(BldBuildListener.FINISHED_SUCCESSFULLY);
+            projectDir_.refresh(true, true);
+        }
 
         return output;
+    }
+
+    public CapturingProcessHandler createProcessHandler(List<String> commands, List<BldRunProperty> properties, BldBuildListener listener) {
+        if (projectDir_ == null || bldMainClass_ == null) {
+            listener.buildFinished(BldBuildListener.FAILED_TO_RUN);
+            return null;
+        }
+
+        var java_parameters = new SimpleJavaParameters();
+        java_parameters.setJdk(ProjectRootManager.getInstance(project_).getProjectSdk());
+        java_parameters.setWorkingDirectory(projectDir_.getCanonicalPath());
+        java_parameters.setJarPath(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
+
+        var jvm_parameters = java_parameters.getVMParametersList();
+        for (var property : properties) {
+            jvm_parameters.defineProperty(property.getPropertyName(), property.getPropertyValue());
+        }
+
+        var program_parameters = java_parameters.getProgramParametersList();
+        program_parameters.add(projectDir_.getCanonicalPath() + "/bld");
+        program_parameters.add(WRAPPER_BUILD_ARGUMENT);
+        program_parameters.add(bldMainClass_);
+        if (offline_) {
+            program_parameters.add(WRAPPER_OFFLINE_ARGUMENT);
+        }
+        if (commands != null) {
+            program_parameters.addAll(commands);
+        }
+
+        GeneralCommandLine command_line;
+        try {
+            command_line = java_parameters.toCommandLine();
+        } catch (CantRunException e) {
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
+            listener.buildFinished(BldBuildListener.FAILED_TO_RUN);
+            return null;
+        }
+
+        final Process process;
+        try {
+            process = command_line.createProcess();
+        }
+        catch (ExecutionException e) {
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
+            listener.buildFinished(BldBuildListener.FAILED_TO_RUN);
+            return null;
+        }
+
+        return new CapturingAnsiEscapesAwareProcessHandler(process, command_line.getCommandLineString());
     }
 
     private String guessBldMainClass(@NotNull VirtualFile projectDir) {

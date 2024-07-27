@@ -15,11 +15,11 @@ import org.jetbrains.annotations.NotNull;
  */
 @Service({Service.Level.APP, Service.Level.PROJECT})
 public final class BldPluginDisposable implements Disposable {
-    public static @NotNull Disposable getInstance() {
+    public static @NotNull Disposable instance() {
         return ApplicationManager.getApplication().getService(BldPluginDisposable.class);
     }
 
-    public static @NotNull Disposable getInstance(@NotNull Project project) {
+    public static @NotNull Disposable instance(@NotNull Project project) {
         return project.getService(BldPluginDisposable.class);
     }
 

@@ -67,7 +67,7 @@ public abstract class BldExecuteDependencyTree {
             }
         }
 
-        BldConfiguration.getInstance(execution.project()).setDependencyTree(tree);
+        BldConfiguration.instance(execution.project()).setDependencyTree(tree);
 
         BldConsoleManager.showTaskMessage("Detected the dependency tree\n", ConsoleViewContentType.SYSTEM_OUTPUT, execution.project());
     }

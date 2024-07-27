@@ -11,6 +11,7 @@ public class BldConstants {
     public static final String PROJECT_NAME = "bld";
     public static final String CONSOLE_NAME = "bld console";
     public static final String BLD_CONSOLE_TOOLBAR = "BldConsoleToolbar";
+    public static final String BLD_EXPLORER_POPUP = "BldExplorerPopup";
     public static final String BLD_EXPLORER_TOOLBAR = "BldExplorerToolbar";
     public static final String WRAPPER_BUILD_ARGUMENT = "--build";
     public static final String WRAPPER_JSON_ARGUMENT = "--json";

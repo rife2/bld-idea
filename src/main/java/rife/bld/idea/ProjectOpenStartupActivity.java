@@ -18,7 +18,7 @@ public class ProjectOpenStartupActivity implements ProjectActivity {
     @Nullable
     @Override
     public Object execute(@NotNull Project project, @NotNull Continuation<? super Unit> continuation) {
-        var execution = BldExecution.getInstance(project);
+        var execution = BldExecution.instance(project);
         execution.setupProject();
         BldExecuteListCommands.run(execution);
         BldExecuteDependencyTree.run(execution);

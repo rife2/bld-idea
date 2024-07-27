@@ -23,7 +23,7 @@ class BldConsoleActionStop extends DumbAwareAction {
     public void actionPerformed(AnActionEvent e) {
         var project = e.getProject();
         if (project != null) {
-            BldExecution.getInstance(project).terminateBldProcess();
+            BldExecution.instance(project).terminateBldProcess();
             BldConsoleManager.getConsole(project).print(BldBundle.message("bld.command.terminated"), ConsoleViewContentType.ERROR_OUTPUT);
         }
     }
@@ -36,7 +36,7 @@ class BldConsoleActionStop extends DumbAwareAction {
         if (project == null) {
             return;
         }
-        presentation.setEnabled(BldExecution.getInstance(project).hasActiveBldProcess());
+        presentation.setEnabled(BldExecution.instance(project).hasActiveBldProcess());
     }
 
     @Override

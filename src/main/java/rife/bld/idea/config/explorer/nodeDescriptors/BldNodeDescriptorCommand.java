@@ -12,14 +12,19 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.CellAppearanceEx;
 import com.intellij.openapi.roots.ui.util.CompositeAppearance;
 import com.intellij.openapi.util.Comparing;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.config.BldBuildCommand;
+import rife.bld.idea.config.BldConfiguration;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public final class BldNodeDescriptorCommand extends BldNodeDescriptor {
+    private static final TextAttributes POSTFIX_ATTRIBUTES = new TextAttributes(JBColor.gray, null, null, EffectType.BOXED, Font.PLAIN);
+
     private final BldBuildCommand command_;
     private CompositeAppearance highlightedText_;
 
@@ -48,6 +53,16 @@ public final class BldNodeDescriptorCommand extends BldNodeDescriptor {
         final var color = UIUtil.getLabelForeground();
         var nameAttributes = new TextAttributes(color, null, null, EffectType.BOXED, Font.PLAIN);
         highlightedText_.getEnding().addText(command_.displayName(), nameAttributes);
+
+        var configuration = BldConfiguration.instance(myProject);
+        final var added_names = new ArrayList<String>(4);
+        for (final var event : configuration.getEventsForCommand(command_)) {
+            final String presentableName = event.getPresentableName();
+            if (!added_names.contains(presentableName)) {
+                added_names.add(presentableName);
+                highlightedText_.getEnding().addText(" (" + presentableName + ')', POSTFIX_ATTRIBUTES);
+            }
+        }
 
         myName = highlightedText_.getText();
 

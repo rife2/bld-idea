@@ -11,6 +11,9 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>
+        <configurationType implementation="rife.bld.idea.execution.BldRunConfigurationType"/>
+        <compiler.task execute="BEFORE" implementation="rife.bld.idea.config.tasks.BldBeforeCompileTask"/>
+        <compiler.task execute="AFTER" implementation="rife.bld.idea.config.tasks.BldAfterCompileTask"/>
     </extensions>
 
     <applicationListeners>

@@ -17,7 +17,6 @@ import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.nodeDescriptors.*;
 import rife.bld.idea.execution.BldDependencyNode;
-import rife.bld.idea.execution.BldDependencyTree;
 import rife.bld.idea.utils.BldBundle;
 
 import java.util.ArrayList;
@@ -31,14 +30,6 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
     private final Object root_ = new Object();
     private final Object commandsFolder_ = new Object();
     private final Object dependenciesFolder_ = new Object();
-
-    private static final Comparator<BldBuildCommand> commandComparator = (command1, command2) -> {
-        final String name1 = command1.displayName();
-        if (name1 == null) return -1;
-        final String name2 = command2.displayName();
-        if (name2 == null) return 1;
-        return name1.compareToIgnoreCase(name2);
-    };
 
     public BldExplorerTreeStructure(final Project project) {
         project_ = project;
@@ -88,18 +79,16 @@ public final class BldExplorerTreeStructure extends AbstractTreeStructure {
 
     @Override
     public Object[] getChildElements(@NotNull Object element) {
-        final var configuration = BldConfiguration.getInstance(project_);
+        final var configuration = BldConfiguration.instance(project_);
         if (element == root_) {
             if (!configuration.isInitialized()) {
-                return new Object[]{BldBundle.message("progress.text.loading.bld.config")};
+                return new Object[]{BldBundle.message("bld.progress.text.loading.config")};
             }
             return new Object[]{commandsFolder_, dependenciesFolder_};
         }
 
         if (element == commandsFolder_) {
-            final var commands = new ArrayList<>(configuration.getCommands());
-            commands.sort(commandComparator);
-            return commands.toArray(new BldBuildCommand[0]);
+            return configuration.getCommands().toArray(new BldBuildCommand[0]);
         }
 
         if (element == dependenciesFolder_) {

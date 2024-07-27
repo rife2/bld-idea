@@ -39,7 +39,7 @@ final class BldProjectActionRefresh extends AnAction implements DumbAware {
             public void run(@NotNull ProgressIndicator indicator) {
                 BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.refresh"), ConsoleViewContentType.USER_INPUT, project_);
 
-                var execution = BldExecution.getInstance(project_);
+                var execution = BldExecution.instance(project_);
                 BldExecuteListCommands.run(execution);
                 BldExecuteDependencyTree.run(execution);
             }

@@ -30,10 +30,11 @@ public final class BldConsoleManager {
 
     public BldConsoleManager(@NotNull Project project) {
         bldConsole_ = createNewConsole(project);
-        Disposer.register(BldPluginDisposable.getInstance(project), bldConsole_);
+        bldConsole_.addMessageFilter(createMessageFilter(project));
+        Disposer.register(BldPluginDisposable.instance(project), bldConsole_);
     }
 
-    private static ConsoleView createNewConsole(@NotNull Project project) {
+    public static ConsoleView createNewConsole(@NotNull Project project) {
         return TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
     }
 
@@ -45,12 +46,18 @@ public final class BldConsoleManager {
     public static void showTaskMessage(@NotNull String message, @NotNull ConsoleViewContentType type,
                                        @NotNull Project project) {
         var executionConsole = BldConsoleManager.getConsole(project);
-        // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
-        Filter filter = (line, entireLength) -> {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            executionConsole.print(message, type);
+        }, ModalityState.nonModal());
+    }
+
+    // Create a filter that monitors console outputs, and turns them into a hyperlink if applicable.
+    public static @NotNull Filter createMessageFilter(@NotNull Project project) {
+        return (line, entireLength) -> {
             Optional<ParseResult> result = ParseResult.parseErrorLocation(project, line);
             if (result.isPresent()) {
                 var linkInfo = new OpenFileHyperlinkInfo(
-                        project,
+                    project,
                         result.get().file,
                         result.get().lineNumber - 1, // 0 indexed
                         result.get().columnNumber - 1 // 0 indexed
@@ -67,11 +74,6 @@ public final class BldConsoleManager {
             }
             return null;
         };
-
-        ApplicationManager.getApplication().invokeLater(() -> {
-            executionConsole.addMessageFilter(filter);
-            executionConsole.print(message, type);
-        }, ModalityState.nonModal());
     }
 
     public ConsoleView getConsole() {

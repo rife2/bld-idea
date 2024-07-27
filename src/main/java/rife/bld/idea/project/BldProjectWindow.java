@@ -4,8 +4,13 @@
  */
 package rife.bld.idea.project;
 
+import com.intellij.execution.ExecutionBundle;
+import com.intellij.execution.RunManager;
 import com.intellij.execution.RunManagerListener;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.impl.RunDialog;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -16,10 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.TreeUIHelper;
+import com.intellij.ui.*;
 import com.intellij.ui.tree.AsyncTreeModel;
 import com.intellij.ui.tree.StructureTreeModel;
 import com.intellij.ui.treeStructure.Tree;
@@ -31,17 +33,22 @@ import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfigurationListener;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptorCommand;
 import rife.bld.idea.console.BldConsoleManager;
+import rife.bld.idea.events.ExecuteAfterCompilationEvent;
+import rife.bld.idea.events.ExecuteBeforeCompilationEvent;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.BldExplorerTreeStructure;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptor;
 import rife.bld.idea.execution.BldExecutionFlags;
+import rife.bld.idea.execution.BldRunConfiguration;
+import rife.bld.idea.execution.BldRunConfigurationType;
 import rife.bld.idea.utils.BldBundle;
 import rife.bld.idea.utils.BldConstants;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,6 +56,7 @@ import java.util.List;
 
 public final class BldProjectWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
     private Project project_;
+    private StructureTreeModel treeModel_;
     private Tree tree_;
     private BldConfiguration config_;
 
@@ -56,7 +64,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         super(true, true);
 
         project_ = project;
-        config_ = BldConfiguration.getInstance(project);
+        config_ = BldConfiguration.instance(project);
 
         setupTree(project);
 
@@ -69,8 +77,8 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
     private void setupTree(@NotNull Project project) {
         var tree_structure = new BldExplorerTreeStructure(project);
-        final var treeModel = new StructureTreeModel<>(tree_structure, this);
-        tree_ = new Tree(new AsyncTreeModel(treeModel, this));
+        treeModel_ = new StructureTreeModel<>(tree_structure, this);
+        tree_ = new Tree(new AsyncTreeModel(treeModel_, this));
         tree_.setRootVisible(false);
         tree_.setShowsRootHandles(true);
         tree_.setCellRenderer(new NodeRenderer());
@@ -78,11 +86,11 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         final var listener = new BldConfigurationListener() {
             @Override
             public void configurationLoaded() {
-                treeModel.invalidateAsync();
+                treeModel_.invalidateAsync();
             }
             @Override
             public void configurationChanged() {
-                treeModel.invalidateAsync();
+                treeModel_.invalidateAsync();
             }
         };
         config_.addBldConfigurationListener(listener);
@@ -90,6 +98,13 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
         TreeUtil.installActions(tree_);
         TreeUIHelper.getInstance().installTreeSpeedSearch(tree_);
+
+        tree_.addMouseListener(new PopupHandler() {
+            @Override
+            public void invokePopup(final Component comp, final int x, final int y) {
+                popupInvoked(comp, x, y);
+            }
+        });
 
         new EditSourceOnDoubleClickHandler.TreeMouseListener(tree_, null) {
             @Override
@@ -101,7 +116,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         project.getMessageBus().connect(this).subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
             @Override
             public void beforeRunTasksChanged () {
-                treeModel.invalidateAsync();
+                treeModel_.invalidateAsync();
             }
         });
     }
@@ -177,7 +192,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
                 BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", commands_info), ConsoleViewContentType.USER_INPUT, project_);
-                BldExecution.getInstance(project_).executeCommands(new BldExecutionFlags(), commands);
+                BldExecution.instance(project_).executeCommands(new BldExecutionFlags(), commands);
             }
         }.queue();
 
@@ -205,16 +220,87 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         if (paths == null || paths.length == 0) {
             return Collections.emptyList();
         }
-        final List<String> targets = new ArrayList<>();
-        for (final TreePath path : paths) {
-            final Object userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
+        final var commands = new ArrayList<String>();
+        for (final var path : paths) {
+            final var userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
             if (!(userObject instanceof BldNodeDescriptorCommand)) {
                 continue;
             }
-            final BldBuildCommand target = ((BldNodeDescriptorCommand)userObject).getCommand();
-            targets.add(target.name());
+            final var command = ((BldNodeDescriptorCommand)userObject).getCommand();
+            commands.add(command.name());
         }
-        return targets;
+        return commands;
+    }
+
+    private void popupInvoked(final Component comp, final int x, final int y) {
+        Object userObject = null;
+        final var path = tree_.getSelectionPath();
+        if (path != null) {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+            if (node != null) {
+                userObject = node.getUserObject();
+            }
+        }
+
+        if (!(userObject instanceof BldNodeDescriptorCommand command_node)) {
+            return;
+        }
+
+        final var group = new DefaultActionGroup();
+        group.add(new BldProjectActionRun(this));
+        group.add(new MakeBldRunConfigurationAction());
+        final var command = command_node.getCommand();
+        final var execute_on_group = DefaultActionGroup.createPopupGroup(BldBundle.messagePointer("bld.project.execute.on.action.group.name"));
+        execute_on_group.add(new BldProjectActionExecuteOnEvent(project_, treeModel_, command, ExecuteBeforeCompilationEvent.instance()));
+        execute_on_group.add(new BldProjectActionExecuteOnEvent(project_, treeModel_, command, ExecuteAfterCompilationEvent.instance()));
+        group.add(execute_on_group);
+
+        final var popup_menu = ActionManager.getInstance().createActionPopupMenu(BldConstants.BLD_EXPLORER_POPUP, group);
+        popup_menu.getComponent().show(comp, x, y);
+    }
+
+    private final class MakeBldRunConfigurationAction extends AnAction {
+        MakeBldRunConfigurationAction() {
+            super(BldBundle.messagePointer("bld.make.run.configuration.name"), AllIcons.General.Settings);
+        }
+
+        @Override
+        public void update(@NotNull AnActionEvent e) {
+            final Presentation presentation = e.getPresentation();
+            presentation.setEnabled(tree_.getSelectionCount() == 1 && canRunSelection());
+        }
+
+        @Override
+        public @NotNull ActionUpdateThread getActionUpdateThread() {
+            return ActionUpdateThread.EDT;
+        }
+
+        @Override
+        public void actionPerformed(@NotNull AnActionEvent e) {
+            var selectionPath = tree_.getSelectionPath();
+            if (selectionPath == null) return;
+
+            final var node = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
+            final var userObject = node.getUserObject();
+            BldBuildCommand command = null;
+            if (userObject instanceof BldNodeDescriptorCommand commandNodeDescriptor) {
+                command = commandNodeDescriptor.getCommand();
+            }
+            String name = command != null ? command.displayName() : null;
+            if (command == null || name == null) {
+                return;
+            }
+
+            RunManager runManager = RunManager.getInstance(project_);
+            RunnerAndConfigurationSettings settings = runManager.createConfiguration(name, BldRunConfigurationType.class);
+            BldRunConfiguration configuration = (BldRunConfiguration)settings.getConfiguration();
+            configuration.acceptSettings(command);
+            if (RunDialog.editConfiguration(e.getProject(), settings, ExecutionBundle
+                .message("create.run.configuration.for.item.dialog.title", configuration.getName()))) {
+                runManager.addConfiguration(settings);
+                runManager.setSelectedConfiguration(settings);
+            }
+        }
     }
 
 }
