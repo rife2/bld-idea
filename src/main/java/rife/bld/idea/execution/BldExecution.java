@@ -4,8 +4,10 @@
  */
 package rife.bld.idea.execution;
 
+import com.intellij.execution.CantRunException;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.SimpleJavaParameters;
 import com.intellij.execution.process.CapturingAnsiEscapesAwareProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -14,6 +16,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
@@ -145,19 +148,27 @@ public final class BldExecution {
             return Collections.emptyList();
         }
 
-        final var command_line = new GeneralCommandLine();
-        command_line.setWorkDirectory(projectDir_.getCanonicalPath());
-        command_line.setExePath("java");
-        command_line.addParameter("-jar");
-        command_line.addParameter(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
-        command_line.addParameter(projectDir_.getCanonicalPath() + "/bld");
-        command_line.addParameter(WRAPPER_BUILD_ARGUMENT);
-        command_line.addParameter(bldMainClass_);
+        var java_parameters = new SimpleJavaParameters();
+        java_parameters.setJdk(ProjectRootManager.getInstance(project_).getProjectSdk());
+        java_parameters.setWorkingDirectory(projectDir_.getCanonicalPath());
+        java_parameters.setJarPath(projectDir_.getCanonicalPath() + "/lib/bld/bld-wrapper.jar");
+        var program_parameters = java_parameters.getProgramParametersList();
+        program_parameters.add(projectDir_.getCanonicalPath() + "/bld");
+        program_parameters.add(WRAPPER_BUILD_ARGUMENT);
+        program_parameters.add(bldMainClass_);
         if (offline_) {
-            command_line.addParameters(WRAPPER_OFFLINE_ARGUMENT);
+            program_parameters.add(WRAPPER_OFFLINE_ARGUMENT);
         }
         if (commands != null) {
-            command_line.addParameters(commands);
+            program_parameters.addAll(commands);
+        }
+
+        GeneralCommandLine command_line;
+        try {
+            command_line = java_parameters.toCommandLine();
+        } catch (CantRunException e) {
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
+            return Collections.emptyList();
         }
 
         final Process process;
