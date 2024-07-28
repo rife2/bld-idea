@@ -228,7 +228,7 @@ public final class BldExecution {
         try {
             command_line = java_parameters.toCommandLine();
         } catch (CantRunException e) {
-            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() + "\n" : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
             listener.buildFinished(BldBuildListener.FAILED_TO_RUN);
             return null;
         }
@@ -238,7 +238,7 @@ public final class BldExecution {
             process = command_line.createProcess();
         }
         catch (ExecutionException e) {
-            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
+            BldConsoleManager.showTaskMessage(e.getMessage() != null ? e.getMessage() + "\n" : e.toString(), ConsoleViewContentType.ERROR_OUTPUT, project_);
             listener.buildFinished(BldBuildListener.FAILED_TO_RUN);
             return null;
         }
