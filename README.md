@@ -9,18 +9,20 @@
 <!-- Plugin description -->
 IntelliJ IDEA support for the `bld` pure Java build tool: https://rife2.com/bld
 
-The `bld` IDEA plugin supports:
-* detecting `bld` projects and finding their main Java class
+The `bld` IDEA plugin feature highlights:
+* detect `bld` projects and find their main Java class
 * quick access to open and edit the main Java class and wrapper properties of `bld` projects
-* listing all the commands in `bld` projects in a side panel
-* executing one or multiple commands in the order they were selected
-* reloading the commands in the `bld` project
-* terminating currently running `bld` commands
+* list all the commands in `bld` projects in a side panel
+* execute one or multiple commands in the order they were selected
+* reload the commands in the `bld` project
+* terminate currently running `bld` commands
 * `bld` console panel for command output with source code hyperlinking
-* display of the `bld` dependency tree
+* display the `bld` dependency tree
 * toggle to run `bld` in offline or online mode
 * auto-save all open files before executing a `bld` command
 * convenient `bld` one-click cache invalidation
+* set `bld` commands to run before or after IDEA compilation
+* create custom `bld` command run configuration with options, JVM arguments, and before launch tasks
 
 <!-- Plugin description end -->
 
