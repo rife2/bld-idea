@@ -12,13 +12,14 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.execution.BldRunConfiguration;
 import rife.bld.idea.execution.BldRunConfigurationType;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectActionMakeRunConfiguration extends AnAction {
+final class BldProjectActionMakeRunConfiguration extends AnAction implements DumbAware {
     private final Project project_;
     private final BldProjectWindow projectWindow_;
 

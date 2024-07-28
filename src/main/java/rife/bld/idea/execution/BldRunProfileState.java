@@ -22,6 +22,7 @@ import org.jetbrains.annotations.Nullable;
 import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.utils.BldBundle;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -55,10 +56,12 @@ public class BldRunProfileState implements RunProfileState {
             final var future = new CompletableFuture<ProcessHandler>();
             var task = new Task.Backgroundable(null, BldBundle.message("bld.build.progress.dialog.title"), true) {
                 public void run(@NotNull ProgressIndicator indicator) {
+                    var commands = new ArrayList<>(List.of(runConfig.getCommand().name()));
+                    commands.addAll(runConfig.getRunOptions().stream().map(BldRunOption::getOptionName).toList());
                     var handler = BldExecution.instance(environment_.getProject())
                         .createProcessHandler(
-                            List.of(runConfig.getCommand().name()),
-                            runConfig.getProperties(),
+                            commands,
+                            runConfig.getRunProperties(),
                             BldBuildListener.DUMMY);
                     if (handler != null) {
                         console.attachToProcess(handler);

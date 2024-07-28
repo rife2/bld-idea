@@ -8,10 +8,11 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectActionCommandHelp extends AnAction {
+final class BldProjectActionCommandHelp extends AnAction implements DumbAware {
     private final BldProjectWindow projectWindow_;
 
     public BldProjectActionCommandHelp(BldProjectWindow projectWindow) {

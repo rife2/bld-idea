@@ -84,7 +84,12 @@ public final class BldRunConfiguration extends LocatableConfigurationBase<BldRun
     }
 
     @NotNull
-    public List<BldRunProperty> getProperties() {
+    public List<BldRunOption> getRunOptions() {
+        return Collections.unmodifiableList(settings_.options_);
+    }
+
+    @NotNull
+    public List<BldRunProperty> getRunProperties() {
         return Collections.unmodifiableList(settings_.properties_);
     }
 
@@ -94,9 +99,16 @@ public final class BldRunConfiguration extends LocatableConfigurationBase<BldRun
         return true;
     }
 
+    static void copyOptions(final Iterable<BldRunOption> from, final List<? super BldRunOption> to) {
+        to.clear();
+        for (var o : from) {
+            to.add(o.clone());
+        }
+    }
+
     static void copyProperties(final Iterable<BldRunProperty> from, final List<? super BldRunProperty> to) {
         to.clear();
-        for (BldRunProperty p : from) {
+        for (var p : from) {
             to.add(p.clone());
         }
     }

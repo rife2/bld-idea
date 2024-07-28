@@ -19,7 +19,8 @@ public class BldRunConfigurationSettingsEditor extends SettingsEditor<RunConfigu
     private final BldRunConfiguration runConfiguration_;
     private String commandName_ = null;
     private ExtendableTextField textField_;
-    private final BldRunConfigurationPropertiesTable propTable_ = new BldRunConfigurationPropertiesTable();
+    private final BldRunConfigurationOptionsTable optionsTable_ = new BldRunConfigurationOptionsTable();
+    private final BldRunConfigurationPropertiesTable propertiesTable_ = new BldRunConfigurationPropertiesTable();
 
     public BldRunConfigurationSettingsEditor(BldRunConfiguration runConfiguration) {
         runConfiguration_ = runConfiguration;
@@ -30,7 +31,8 @@ public class BldRunConfigurationSettingsEditor extends SettingsEditor<RunConfigu
         if (commandName_ != null) {
             textField_.setText(commandName_);
         }
-        propTable_.refreshValues();
+        optionsTable_.refreshValues();
+        propertiesTable_.refreshValues();
         fireEditorStateChanged();
     }
 
@@ -38,7 +40,8 @@ public class BldRunConfigurationSettingsEditor extends SettingsEditor<RunConfigu
     protected void resetEditorFrom(@NotNull RunConfiguration s) {
         final var config = (BldRunConfiguration) s;
         commandName_ = config.settings_.commandName_;
-        propTable_.setValues(config.settings_.properties_);
+        optionsTable_.setValues(config.settings_.options_);
+        propertiesTable_.setValues(config.settings_.properties_);
         updateUI();
     }
 
@@ -46,7 +49,8 @@ public class BldRunConfigurationSettingsEditor extends SettingsEditor<RunConfigu
     protected void applyEditorTo(@NotNull RunConfiguration s) {
         final var config = (BldRunConfiguration) s;
         config.settings_.commandName_ = commandName_;
-        BldRunConfiguration.copyProperties(ContainerUtil.filter(propTable_.getElements(), property -> !propTable_.isEmpty(property)), config.settings_.properties_);
+        BldRunConfiguration.copyOptions(ContainerUtil.filter(optionsTable_.getElements(), option -> !optionsTable_.isEmpty(option)), config.settings_.options_);
+        BldRunConfiguration.copyProperties(ContainerUtil.filter(propertiesTable_.getElements(), property -> !propertiesTable_.isEmpty(property)), config.settings_.properties_);
     }
 
     @NotNull
@@ -68,10 +72,16 @@ public class BldRunConfigurationSettingsEditor extends SettingsEditor<RunConfigu
         final var panel = new JPanel(new BorderLayout());
         panel.add(LabeledComponent.create(textField_, BldBundle.message("bld.label.run.config.command.name"), BorderLayout.WEST), BorderLayout.NORTH);
 
+        final var options_table_name = BldBundle.message("bld.label.table.name.options");
+        final var options_table_component = LabeledComponent.create(optionsTable_.getComponent(), options_table_name);
+        options_table_component.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        panel.add(options_table_component, BorderLayout.CENTER);
+
         final var properties_table_name = BldBundle.message("bld.label.table.name.properties");
-        final var table_component = LabeledComponent.create(propTable_.getComponent(), properties_table_name);
-        table_component.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
-        panel.add(table_component, BorderLayout.CENTER);
+        final var properties_table_component = LabeledComponent.create(propertiesTable_.getComponent(), properties_table_name);
+        properties_table_component.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+        panel.add(properties_table_component, BorderLayout.SOUTH);
+
         return panel;
     }
 }
