@@ -16,7 +16,7 @@ import rife.bld.idea.utils.BldBundle;
 public final class BldRunConfigurationType extends SimpleConfigurationType {
     public BldRunConfigurationType() {
         super("AntRunConfiguration", BldBundle.message("bld.configuration.type.name.command"),
-            BldBundle.message("bld.configuration.type.description.run.bld.command"), NotNullLazyValue.lazy(() -> BldIcons.Bld));
+            BldBundle.message("bld.configuration.type.description.run.bld.command"), NotNullLazyValue.lazy(() -> BldIcons.Action));
     }
 
     @Override
