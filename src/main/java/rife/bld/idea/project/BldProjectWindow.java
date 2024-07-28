@@ -6,7 +6,10 @@ package rife.bld.idea.project;
 
 import com.intellij.execution.RunManagerListener;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DataManager;
+import com.intellij.ide.DefaultTreeExpander;
+import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -135,6 +138,14 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         config_ = null;
     }
 
+    private final TreeExpander treeExpander_ = new DefaultTreeExpander(() -> tree_) {
+        @Override
+        protected boolean isEnabled(@NotNull JTree tree) {
+            final BldConfiguration config = config_;
+            return config != null && super.isEnabled(tree);
+        }
+    };
+
     private JPanel createToolbarPanel() {
         final var group = new DefaultActionGroup();
         group.add(new BldProjectActionRefresh(project_));
@@ -142,6 +153,13 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         group.addSeparator();
         group.add(new BldProjectActionEditMain(project_));
         group.add(new BldProjectActionEditProperties(project_));
+        group.addSeparator();
+        AnAction action = CommonActionsManager.getInstance().createExpandAllAction(treeExpander_, this);
+        action.getTemplatePresentation().setDescription(BldBundle.messagePointer("bld.action.expand.all.description"));
+        group.add(action);
+        action = CommonActionsManager.getInstance().createCollapseAllAction(treeExpander_, this);
+        action.getTemplatePresentation().setDescription(BldBundle.messagePointer("bld.action.collapse.all.description"));
+        group.add(action);
         group.addSeparator();
         group.add(new BldProjectActionClearCache(project_));
         group.addSeparator();
