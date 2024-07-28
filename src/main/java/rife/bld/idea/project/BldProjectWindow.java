@@ -4,13 +4,8 @@
  */
 package rife.bld.idea.project;
 
-import com.intellij.execution.ExecutionBundle;
-import com.intellij.execution.RunManager;
 import com.intellij.execution.RunManagerListener;
-import com.intellij.execution.RunnerAndConfigurationSettings;
-import com.intellij.execution.impl.RunDialog;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -40,8 +35,6 @@ import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.config.explorer.BldExplorerTreeStructure;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptor;
 import rife.bld.idea.execution.BldExecutionFlags;
-import rife.bld.idea.execution.BldRunConfiguration;
-import rife.bld.idea.execution.BldRunConfigurationType;
 import rife.bld.idea.utils.BldBundle;
 import rife.bld.idea.utils.BldConstants;
 
@@ -53,6 +46,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public final class BldProjectWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
     private Project project_;
@@ -177,6 +171,21 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         }
     }
 
+    private void executeBuildCommands(List<String> commands) {
+        var commands_info = String.join(" ", commands);
+        new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.commands", commands_info), true) {
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", commands_info), ConsoleViewContentType.USER_INPUT, project_);
+                BldExecution.instance(project_).executeCommands(new BldExecutionFlags(), commands);
+            }
+        }.queue();
+    }
+
+    boolean hasSingleSelection() {
+        return tree_.getSelectionCount() == 1;
+    }
+
     void runSelection(DataContext dataContext) {
         if (!canRunSelection()) {
             return;
@@ -186,15 +195,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         FileDocumentManager.getInstance().saveAllDocuments();
 
         // execute the selected commands
-        final var commands = getCommandNamesFromPaths(tree_.getSelectionPaths());
-        var commands_info = String.join(" ", commands);
-        new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.commands", commands_info), true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", commands_info), ConsoleViewContentType.USER_INPUT, project_);
-                BldExecution.instance(project_).executeCommands(new BldExecutionFlags(), commands);
-            }
-        }.queue();
+        executeBuildCommands(getCommandNamesFromPaths(tree_.getSelectionPaths()));
 
         // move focus to editor
         ToolWindowManager.getInstance(project_).activateEditorComponent();
@@ -214,6 +215,32 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             return userObject instanceof BldNodeDescriptorCommand;
         }
         return true;
+    }
+
+    BldBuildCommand getSelectedBuildCommand() {
+        var selection_path = tree_.getSelectionPath();
+        if (selection_path == null) return null;
+
+        final var node = (DefaultMutableTreeNode) selection_path.getLastPathComponent();
+        final var user_object = node.getUserObject();
+        BldBuildCommand command = null;
+        if (user_object instanceof BldNodeDescriptorCommand node_descriptor) {
+            command = node_descriptor.getCommand();
+        }
+        return command;
+    }
+
+    void helpSelection(DataContext dataContext) {
+        var command = getSelectedBuildCommand();
+        if (command == null) {
+            return;
+        }
+
+        // execute the selected commands
+        executeBuildCommands(List.of("help", command.name()));
+
+        // move focus to editor
+        Objects.requireNonNull(ToolWindowManager.getInstance(project_).getToolWindow(BldConstants.CONSOLE_NAME)).activate(null);
     }
 
     private static List<String> getCommandNamesFromPaths(TreePath[] paths) {
@@ -248,7 +275,8 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
         final var group = new DefaultActionGroup();
         group.add(new BldProjectActionRun(this));
-        group.add(new MakeBldRunConfigurationAction());
+        group.add(new BldProjectActionCommandHelp(this));
+        group.add(new BldProjectActionMakeRunConfiguration(project_, this));
         final var command = command_node.getCommand();
         final var execute_on_group = DefaultActionGroup.createPopupGroup(BldBundle.messagePointer("bld.project.execute.on.action.group.name"));
         execute_on_group.add(new BldProjectActionExecuteOnEvent(project_, treeModel_, command, ExecuteBeforeCompilationEvent.instance()));
@@ -257,50 +285,6 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
 
         final var popup_menu = ActionManager.getInstance().createActionPopupMenu(BldConstants.BLD_EXPLORER_POPUP, group);
         popup_menu.getComponent().show(comp, x, y);
-    }
-
-    private final class MakeBldRunConfigurationAction extends AnAction {
-        MakeBldRunConfigurationAction() {
-            super(BldBundle.messagePointer("bld.make.run.configuration.name"), AllIcons.General.Settings);
-        }
-
-        @Override
-        public void update(@NotNull AnActionEvent e) {
-            final Presentation presentation = e.getPresentation();
-            presentation.setEnabled(tree_.getSelectionCount() == 1 && canRunSelection());
-        }
-
-        @Override
-        public @NotNull ActionUpdateThread getActionUpdateThread() {
-            return ActionUpdateThread.EDT;
-        }
-
-        @Override
-        public void actionPerformed(@NotNull AnActionEvent e) {
-            var selectionPath = tree_.getSelectionPath();
-            if (selectionPath == null) return;
-
-            final var node = (DefaultMutableTreeNode) selectionPath.getLastPathComponent();
-            final var userObject = node.getUserObject();
-            BldBuildCommand command = null;
-            if (userObject instanceof BldNodeDescriptorCommand commandNodeDescriptor) {
-                command = commandNodeDescriptor.getCommand();
-            }
-            String name = command != null ? command.displayName() : null;
-            if (command == null || name == null) {
-                return;
-            }
-
-            RunManager runManager = RunManager.getInstance(project_);
-            RunnerAndConfigurationSettings settings = runManager.createConfiguration(name, BldRunConfigurationType.class);
-            BldRunConfiguration configuration = (BldRunConfiguration)settings.getConfiguration();
-            configuration.acceptSettings(command);
-            if (RunDialog.editConfiguration(e.getProject(), settings, ExecutionBundle
-                .message("create.run.configuration.for.item.dialog.title", configuration.getName()))) {
-                runManager.addConfiguration(settings);
-                runManager.setSelectedConfiguration(settings);
-            }
-        }
     }
 
 }

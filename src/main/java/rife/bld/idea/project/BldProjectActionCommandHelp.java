@@ -8,30 +8,22 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.project.DumbAware;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.utils.BldBundle;
 
-final class BldProjectActionRun extends AnAction {
+final class BldProjectActionCommandHelp extends AnAction {
     private final BldProjectWindow projectWindow_;
 
-    public BldProjectActionRun(BldProjectWindow projectWindow) {
-        super(BldBundle.messagePointer("bld.action.run.name"),
-            BldBundle.messagePointer("bld.action.run.description"), AllIcons.Actions.Execute);
+    public BldProjectActionCommandHelp(BldProjectWindow projectWindow) {
+        super(BldBundle.messagePointer("bld.action.command.help.name"),
+            BldBundle.messagePointer("bld.action.command.help.description"), AllIcons.Actions.Help);
 
         projectWindow_ = projectWindow;
     }
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        projectWindow_.runSelection(e.getDataContext());
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent event) {
-        final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("bld.action.run.name"));
-        presentation.setEnabled(projectWindow_.canRunSelection());
+        projectWindow_.helpSelection(e.getDataContext());
     }
 
     @Override
