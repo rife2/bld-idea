@@ -22,6 +22,7 @@ Support for the `bld` pure Java build tool: https://rife2.com/bld
 * convenient `bld` one-click cache invalidation
 * set `bld` commands to run before or after IDEA compilation
 * create custom `bld` command run configuration with options, JVM arguments, and before launch tasks
+* assign keyboard shortcuts for `bld` commands
 
 Projects need to use `bld` `v2.0` or later.
 
