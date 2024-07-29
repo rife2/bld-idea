@@ -22,8 +22,6 @@ public abstract class BldExecuteDependencyTree {
         BldDependencyNode current_node = null;
         var current_depth = 0;
         for (var line : output) {
-            line = line.trim();
-
             if (line.startsWith("extensions:")) {
                 current_node = tree.extensions;
                 current_depth = 1;
