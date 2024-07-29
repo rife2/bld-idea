@@ -4,10 +4,16 @@
 
 ## [Unreleased]
 
+## [0.6.0] - 2024-07-29
+
 - Added assigning keyboard shortcuts to `bld` commands.
-- Fixed commandline not displayed when executing before or after compile commands.
+- Fixed command-line not displayed when executing before or after compile commands.
 - Improved `bld` icon used for run configurations.
 
 ## [0.5.0] - 2024-07-28
 
 - Initial release for `bld` 2.0.1.
+
+[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/rife2/bld-idea/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/rife2/bld-idea/commits/v0.5.0
