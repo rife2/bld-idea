@@ -55,7 +55,7 @@ public final class BldRunConfiguration extends LocatableConfigurationBase<BldRun
     @Override
     public String suggestedName() {
         var command = getCommand();
-        return command == null ? null : command.displayName();
+        return command == null ? null : command.name();
     }
 
     @NotNull

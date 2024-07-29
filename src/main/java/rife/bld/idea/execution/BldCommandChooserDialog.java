@@ -90,7 +90,7 @@ public class BldCommandChooserDialog extends DialogWrapper {
         TreeSpeedSearch.installOn(tree, false, path -> {
             final var userObject = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
             if (userObject instanceof BldBuildCommand command) {
-                return command.displayName();
+                return command.name();
             }
             return null;
         });

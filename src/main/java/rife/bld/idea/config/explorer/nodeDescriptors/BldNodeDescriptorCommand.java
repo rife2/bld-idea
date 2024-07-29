@@ -8,12 +8,14 @@ import com.intellij.icons.AllIcons;
 import com.intellij.ide.util.treeView.NodeDescriptor;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
+import com.intellij.openapi.keymap.KeymapUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.CellAppearanceEx;
 import com.intellij.openapi.roots.ui.util.CompositeAppearance;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleColoredComponent;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.config.BldBuildCommand;
@@ -52,21 +54,30 @@ public final class BldNodeDescriptorCommand extends BldNodeDescriptor {
 
         final var color = UIUtil.getLabelForeground();
         var nameAttributes = new TextAttributes(color, null, null, EffectType.BOXED, Font.PLAIN);
-        highlightedText_.getEnding().addText(command_.displayName(), nameAttributes);
+        highlightedText_.getEnding().addText(command_.name(), nameAttributes);
+
+        myName = highlightedText_.getText();
+
+        addShortcutText(getCommand().actionId());
 
         var configuration = BldConfiguration.instance(myProject);
         final var added_names = new ArrayList<String>(4);
         for (final var event : configuration.getEventsForCommand(command_)) {
-            final String presentableName = event.getPresentableName();
-            if (!added_names.contains(presentableName)) {
-                added_names.add(presentableName);
-                highlightedText_.getEnding().addText(" (" + presentableName + ')', POSTFIX_ATTRIBUTES);
+            final String presentable_name = event.getPresentableName();
+            if (!added_names.contains(presentable_name)) {
+                added_names.add(presentable_name);
+                highlightedText_.getEnding().addText(" (" + presentable_name + ')', POSTFIX_ATTRIBUTES);
             }
         }
 
-        myName = highlightedText_.getText();
-
         return !Comparing.equal(highlightedText_, oldText);
+    }
+
+    private void addShortcutText(String actionId) {
+        var shortcut = KeymapUtil.getPrimaryShortcut(actionId);
+        if (shortcut != null) {
+            highlightedText_.getEnding().addText(" (" + KeymapUtil.getShortcutText(shortcut) + ")", SimpleTextAttributes.GRAY_ATTRIBUTES);
+        }
     }
 
     public CellAppearanceEx getHighlightedText() {

@@ -4,9 +4,11 @@
  */
 package rife.bld.idea.config;
 
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DataContext;
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.ReadAction;
@@ -34,6 +36,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import rife.bld.idea.console.BldConsoleManager;
 import rife.bld.idea.console.BldConsoleWindowFactory;
 import rife.bld.idea.events.ExecuteAfterCompilationEvent;
 import rife.bld.idea.events.ExecuteBeforeCompilationEvent;
@@ -43,6 +46,7 @@ import rife.bld.idea.execution.BldDependencyTree;
 import rife.bld.idea.execution.BldExecution;
 import rife.bld.idea.execution.BldExecutionFlags;
 import rife.bld.idea.project.BldProjectWindowFactory;
+import rife.bld.idea.project.BldProjectActionExecuteCommand;
 import rife.bld.idea.utils.BldBundle;
 import rife.bld.idea.utils.BldConstants;
 
@@ -53,6 +57,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @State(name = "BldConfiguration", storages = @Storage("bld.xml"), useLoadedStateAsExisting = false)
 public final class BldConfiguration implements PersistentStateComponent<Element>, Disposable {
     private static final Logger LOG = Logger.getInstance(BldConfiguration.class);
+    @NonNls public static final String ACTION_ID_PREFIX = "Bld_";
+
     @NonNls private static final String ELEMENT_EVENTS = "events";
     @NonNls private static final String ELEMENT_EXECUTE_ON = "executeOn";
     @NonNls private static final String ELEMENT_EVENT = "event";
@@ -67,9 +73,9 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     private final BldDependencyTree dependencyTree_ = new BldDependencyTree();
 
     private static final Comparator<BldBuildCommand> commandComparator = (command1, command2) -> {
-        final String name1 = command1.displayName();
+        final String name1 = command1.name();
         if (name1 == null) return -1;
-        final String name2 = command2.displayName();
+        final String name2 = command2.name();
         if (name2 == null) return 1;
         return name1.compareToIgnoreCase(name2);
     };
@@ -82,6 +88,10 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     public static BldConfiguration instance(final @NotNull Project project) {
         return project.getService(BldConfiguration.class);
+    }
+
+    public static String getActionIdPrefix(final @NotNull Project project) {
+        return ACTION_ID_PREFIX + project.getLocationHash();
     }
 
     @Override
@@ -248,6 +258,27 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
         commandsMap_.clear();
         sorted.forEach(cmd -> commandsMap_.put(cmd.name(), cmd));
 
+        ReadAction.run(() -> {
+            synchronized (this) {
+                if (!project_.isDisposed()) {
+                    // unregister bld actions
+                    var actionManager = ActionManagerEx.getInstanceEx();
+                    for (var oldId : actionManager.getActionIdList(getActionIdPrefix(project_))) {
+                        actionManager.unregisterAction(oldId);
+                    }
+
+                    // register project actions
+                    for (var command : sorted) {
+                        final var action_id = command.actionId();
+                        if (action_id != null) {
+                            final var action = new BldProjectActionExecuteCommand(project_, command.name(), command.description());
+                            actionManager.registerAction(action_id, action);
+                        }
+                    }
+                }
+            }
+        });
+
         ApplicationManager.getApplication().invokeLater(
             () -> eventDispatcher_.getMulticaster().configurationChanged(),
             ModalityState.any()
@@ -320,7 +351,7 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
             if (ExecuteAfterCompilationEvent.TYPE_ID.equals(event.getTypeId()) && compileContext.getMessageCount(CompilerMessageCategory.ERROR) > 0) {
                 compileContext.addMessage(
-                    CompilerMessageCategory.INFORMATION, BldBundle.message("bld.message.skip.command.after.compilation.errors", command.displayName()), null, -1, -1
+                    CompilerMessageCategory.INFORMATION, BldBundle.message("bld.message.skip.command.after.compilation.errors", command.name()), null, -1, -1
                 );
                 return true;
             }
@@ -347,6 +378,7 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
                 else {
                     var task = new Task.Backgroundable(null, BldBundle.message("bld.build.progress.dialog.title"), true) {
                         public void run(@NotNull ProgressIndicator indicator) {
+                            BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", command.name()), ConsoleViewContentType.USER_INPUT, project);
                             BldExecution.instance(project).executeCommands(new BldExecutionFlags(), command, state -> {
                                 result.set((state == BldBuildListener.FINISHED_SUCCESSFULLY));
                                 command_done.up();

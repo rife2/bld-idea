@@ -12,7 +12,10 @@ import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.keymap.Keymap;
+import com.intellij.openapi.keymap.KeymapManagerListener;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
@@ -26,7 +29,10 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.EditSourceOnDoubleClickHandler;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.intellij.util.xml.DomManager;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfigurationListener;
 import rife.bld.idea.config.explorer.nodeDescriptors.BldNodeDescriptorCommand;
@@ -45,11 +51,11 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public final class BldProjectWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
     private Project project_;
@@ -109,6 +115,36 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
                 runSelection(DataManager.getInstance().getDataContext(tree_));
             }
         }.installOn(tree_);
+
+        tree_.registerKeyboardAction(new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                runSelection(DataManager.getInstance().getDataContext(tree_));
+            }
+        }, KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), WHEN_FOCUSED);
+
+        ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(KeymapManagerListener.TOPIC, new KeymapManagerListener() {
+            @Override
+            public void keymapAdded(@NotNull Keymap keymap) {
+                treeModel_.invalidateAsync();
+            }
+
+            @Override
+            public void keymapRemoved(@NotNull Keymap keymap) {
+                treeModel_.invalidateAsync();
+            }
+
+            @Override
+            public void activeKeymapChanged(@Nullable Keymap keymap) {
+                treeModel_.invalidateAsync();
+            }
+
+            @Override
+            public void shortcutChanged(@NotNull Keymap keymap, @NonNls @NotNull String actionId, boolean fromSettings) {
+                treeModel_.invalidateAsync();
+            }
+        });
+        DomManager.getDomManager(project).addDomEventListener(__ -> treeModel_.invalidateAsync(), this);
 
         project.getMessageBus().connect(this).subscribe(RunManagerListener.TOPIC, new RunManagerListener() {
             @Override
@@ -300,9 +336,9 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
         execute_on_group.add(new BldProjectActionExecuteOnEvent(project_, treeModel_, command, ExecuteBeforeCompilationEvent.instance()));
         execute_on_group.add(new BldProjectActionExecuteOnEvent(project_, treeModel_, command, ExecuteAfterCompilationEvent.instance()));
         group.add(execute_on_group);
+        group.add(new BldProjectActionAssignShortcut(project_, command.actionId()));
 
         final var popup_menu = ActionManager.getInstance().createActionPopupMenu(BldConstants.BLD_EXPLORER_POPUP, group);
         popup_menu.getComponent().show(comp, x, y);
     }
-
 }

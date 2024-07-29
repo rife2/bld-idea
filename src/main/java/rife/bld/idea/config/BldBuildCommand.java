@@ -4,5 +4,5 @@
  */
 package rife.bld.idea.config;
 
-public record BldBuildCommand(String name, String displayName, String description) {
+public record BldBuildCommand(String name, String description, String actionId) {
 }
