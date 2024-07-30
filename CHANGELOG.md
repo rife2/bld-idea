@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.3] - 2024-07-30
+
 - Updated to intellij-platform-plugin 2.0.0
 - Plugin description tweaks.
 
@@ -26,7 +28,8 @@
 
 - Initial release for `bld` 2.0.1.
 
-[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.2...HEAD
+[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/rife2/bld-idea/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/rife2/bld-idea/compare/v0.6.1...v0.6.2
 [0.6.1]: https://github.com/rife2/bld-idea/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/rife2/bld-idea/compare/v0.5.0...v0.6.0
