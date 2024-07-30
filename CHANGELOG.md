@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.6.1] - 2024-07-30
+
 - Fixed run configuration `bld` commands not executing asynchronously.
 
 ## [0.6.0] - 2024-07-29
@@ -16,6 +18,7 @@
 
 - Initial release for `bld` 2.0.1.
 
-[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.1...HEAD
+[0.6.1]: https://github.com/rife2/bld-idea/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/rife2/bld-idea/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/rife2/bld-idea/commits/v0.5.0
