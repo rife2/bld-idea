@@ -87,6 +87,8 @@ public class BldConsoleViewPanel extends JPanel {
     private JPanel createToolbarPanel() {
         var group = new DefaultActionGroup();
         group.add(new BldConsoleActionStop());
+        group.add(new BldConsoleActionScrollTop());
+        group.add(new BldConsoleActionScrollEnd());
         group.add(new BldConsoleActionClear());
 
         var toolbar_panel = new JPanel(new BorderLayout());
