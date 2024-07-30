@@ -9,6 +9,8 @@
 <!-- Plugin description -->
 Support for the `bld` pure Java build tool: https://rife2.com/bld
 
+<img src="https://rife2.com/images/bld-idea.png" style="width: 100%">
+
 * detect `bld` projects and find their main Java class
 * quick access to open and edit the main Java class and wrapper properties of `bld` projects
 * list all the commands in `bld` projects in a side panel
@@ -28,7 +30,7 @@ Projects need to use `bld` `v2.0` or later.
 
 <!-- Plugin description end -->
 
-## Installation (not published yet)
+## Installation
 
 - Using the IDE built-in plugin system:
   
