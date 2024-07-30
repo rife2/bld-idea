@@ -2,8 +2,8 @@
 
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Java](https://img.shields.io/badge/java-17%2B-blue)](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-[![Version](https://img.shields.io/jetbrains/plugin/v/24980-bld.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/24980-bld.svg)](https://plugins.jetbrains.com/plugin/MARKETPLACE_ID)
+[![Version](https://img.shields.io/jetbrains/plugin/v/24980-bld.svg)](https://plugins.jetbrains.com/plugin/24980-bld)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/24980-bld.svg)](https://plugins.jetbrains.com/plugin/24980-bld)
 ![Build](https://github.com/rife2/bld-idea/workflows/Build/badge.svg)
 
 <!-- Plugin description -->
