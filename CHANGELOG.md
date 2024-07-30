@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Plugin description tweaks.
+
 ## [0.6.2] - 2024-07-30
 
 - Added scroll to top and scroll to bottom icons in the `bld` console.
