@@ -4,6 +4,7 @@
 
 ## [Unreleased]
 
+- Updated to intellij-platform-plugin 2.0.0
 - Plugin description tweaks.
 
 ## [0.6.2] - 2024-07-30
