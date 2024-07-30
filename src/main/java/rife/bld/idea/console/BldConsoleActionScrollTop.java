@@ -23,6 +23,15 @@ class BldConsoleActionScrollTop extends DumbAwareAction {
     }
 
     @Override
+    public void update(AnActionEvent event) {
+        var project = event.getProject();
+        if (project != null) {
+            var presentation = event.getPresentation();
+            presentation.setEnabled(BldConsoleManager.getConsole(project).getContentSize() != 0);
+        }
+    }
+
+    @Override
     public void actionPerformed(AnActionEvent e) {
         var project = e.getProject();
         if (project != null) {

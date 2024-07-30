@@ -25,6 +25,15 @@ class BldConsoleActionClear extends DumbAwareAction {
     }
 
     @Override
+    public void update(AnActionEvent event) {
+        var project = event.getProject();
+        if (project != null) {
+            var presentation = event.getPresentation();
+            presentation.setEnabled(BldConsoleManager.getConsole(project).getContentSize() != 0);
+        }
+    }
+
+    @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
         return ActionUpdateThread.BGT;
     }
