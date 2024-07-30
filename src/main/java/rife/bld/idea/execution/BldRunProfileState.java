@@ -66,7 +66,7 @@ public class BldRunProfileState implements RunProfileState {
                     if (handler != null) {
                         console.attachToProcess(handler);
 
-                        handler.runProcess();
+                        handler.startNotify();
                     }
                     future.complete(handler);
                 }

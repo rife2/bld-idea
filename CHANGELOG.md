@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Fixed run configuration `bld` commands not executing asynchronously.
+
 ## [0.6.0] - 2024-07-29
 
 - Added assigning keyboard shortcuts to `bld` commands.
