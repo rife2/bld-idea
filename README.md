@@ -6,10 +6,10 @@
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/24980-bld.svg)](https://plugins.jetbrains.com/plugin/24980-bld)
 ![Build](https://github.com/rife2/bld-idea/workflows/Build/badge.svg)
 
+<img src="https://rife2.com/images/bld-idea.png" style="width: 100%">
+
 <!-- Plugin description -->
 Support for the `bld` pure Java build tool: https://rife2.com/bld
-
-<img src="https://rife2.com/images/bld-idea.png" style="width: 100%">
 
 * detect `bld` projects and find their main Java class
 * quick access to open and edit the main Java class and wrapper properties of `bld` projects
