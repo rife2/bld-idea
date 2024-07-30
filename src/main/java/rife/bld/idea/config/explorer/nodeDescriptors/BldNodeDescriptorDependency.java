@@ -44,5 +44,7 @@ public final class BldNodeDescriptorDependency extends BldNodeDescriptor {
     public void customize(@NotNull SimpleColoredComponent component) {
         component.setIcon(getIcon());
         component.append(node_.name());
+        component.setToolTipText(null);
     }
+
 }

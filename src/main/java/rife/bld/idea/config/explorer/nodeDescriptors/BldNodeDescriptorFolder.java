@@ -59,5 +59,6 @@ public final class BldNodeDescriptorFolder extends BldNodeDescriptor {
     public void customize(@NotNull SimpleColoredComponent component) {
         getHighlightedText().customize(component);
         component.setIcon(getIcon());
+        component.setToolTipText(null);
     }
 }
