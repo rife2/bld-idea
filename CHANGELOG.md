@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Added scroll to top and scroll to bottom icons in the `bld` console.
+- Fixed project browser tooltips wrong displaying on folders and dependencies.
+
 ## [0.6.1] - 2024-07-30
 
 - Fixed run configuration `bld` commands not executing asynchronously.
