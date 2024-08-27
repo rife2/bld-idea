@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.7.0] - 2024-08-27
+
 - Fix for execution hanging when plugin is not initialized.
 
 ## [0.6.4] - 2024-08-19
@@ -34,7 +36,8 @@
 
 - Initial release for `bld` 2.0.1.
 
-[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.6.4...HEAD
+[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/rife2/bld-idea/compare/v0.6.4...v0.7.0
 [0.6.4]: https://github.com/rife2/bld-idea/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/rife2/bld-idea/compare/v0.6.2...v0.6.3
 [0.6.2]: https://github.com/rife2/bld-idea/compare/v0.6.1...v0.6.2
