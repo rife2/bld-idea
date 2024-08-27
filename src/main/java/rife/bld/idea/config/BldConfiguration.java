@@ -189,18 +189,6 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
         return initialized_;
     }
 
-    public void ensureInitialized() {
-        if (!isInitialized()) {
-            ProgressIndicatorUtils.awaitWithCheckCanceled(() -> {
-                if (!isInitialized()) {
-                    TimeoutUtil.sleep(10);
-                    return isInitialized();
-                }
-                return true;
-            });
-        }
-    }
-
     public List<BldBuildCommand> getCommands() {
         return Collections.unmodifiableList(commands_);
     }
@@ -334,15 +322,14 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     }
 
     private boolean runCommandSynchronously(CompileContext compileContext, final DataContext dataContext, ExecutionEvent event) {
+        if (!isInitialized()) {
+            return true;
+        }
+
         ApplicationManager.getApplication().assertIsNonDispatchThread();
         final var progress = compileContext.getProgressIndicator();
         progress.pushState();
         try {
-            if (!isInitialized()) {
-                progress.setText(BldBundle.message("bld.progress.text.loading.config"));
-                ensureInitialized();
-            }
-
             final var command = getCommandForEvent(event);
             if (command == null) {
                 // no task assigned
