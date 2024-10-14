@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Updated to intellij-platform-plugin 2.0.2.
+
 ## [0.7.0] - 2024-08-27
 
 - Fix for execution hanging when plugin is not initialized.
