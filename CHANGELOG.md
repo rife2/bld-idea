@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Updated for latest IntelliJ IDEA.
+
 ## [0.7.1] - 2024-10-14
 
 - Updated to intellij-platform-plugin 2.0.2.
