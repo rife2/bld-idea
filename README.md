@@ -15,7 +15,9 @@ Support for the `bld` pure Java build tool: https://rife2.com/bld
 * quick access to open and edit the main Java class and wrapper properties of `bld` projects
 * list all the commands in `bld` projects in a side panel
 * execute one or multiple commands in the order they were selected
+* run `bld` commands from icons in the gutter of the build file
 * reload the commands in the `bld` project
+* automatically reload the commands and dependencies when the build sources or wrapper properties change
 * terminate currently running `bld` commands
 * `bld` console panel for command output with source code hyperlinking
 * display the `bld` dependency tree
