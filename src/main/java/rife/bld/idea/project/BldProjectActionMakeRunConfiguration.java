@@ -4,7 +4,6 @@
  */
 package rife.bld.idea.project;
 
-import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.RunManager;
 import com.intellij.execution.impl.RunDialog;
 import com.intellij.icons.AllIcons;
@@ -52,8 +51,8 @@ final class BldProjectActionMakeRunConfiguration extends AnAction implements Dum
         var settings = run_manager.createConfiguration(command.name(), BldRunConfigurationType.class);
         var configuration = (BldRunConfiguration) settings.getConfiguration();
         configuration.acceptSettings(command);
-        if (RunDialog.editConfiguration(e.getProject(), settings, ExecutionBundle
-            .message("create.run.configuration.for.item.dialog.title", configuration.getName()))) {
+        if (RunDialog.editConfiguration(e.getProject(), settings,
+            BldBundle.message("bld.make.run.configuration.dialog.title", configuration.getName()))) {
             run_manager.addConfiguration(settings);
             run_manager.setSelectedConfiguration(settings);
         }

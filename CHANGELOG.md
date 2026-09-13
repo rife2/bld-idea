@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Replaced an internal IntelliJ Platform API.
+
 ## [0.8.0] - 2026-09-13
 
 - Requires IntelliJ IDEA 2024.1 or later.
