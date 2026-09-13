@@ -6,10 +6,15 @@ package rife.bld.idea.execution;
 
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
-import com.intellij.openapi.roots.ModuleRootModificationUtil;
+import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
+import com.intellij.openapi.util.EmptyRunnable;
 import com.intellij.testFramework.IdeaTestUtil;
 import com.intellij.testFramework.fixtures.LightJavaCodeInsightFixtureTestCase;
+import com.intellij.openapi.project.RootsChangeRescanningInfo;
+import org.jetbrains.annotations.NotNull;
 
 public class BldRefreshTest extends LightJavaCodeInsightFixtureTestCase {
     // a project opened for the first time names an SDK that the IDE only sets up after the project started
@@ -26,7 +31,16 @@ public class BldRefreshTest extends LightJavaCodeInsightFixtureTestCase {
             refresh.watch(myFixture.getTempDirFixture().findOrCreateDir("project"));
 
             // other changes don't need a refresh, like the jars bld downloads or another SDK
-            ModuleRootModificationUtil.addModuleLibrary(getModule(), myFixture.getTempDirFixture().findOrCreateDir("lib").getUrl());
+            var roots_changes = new int[1];
+            getProject().getMessageBus().connect(getTestRootDisposable()).subscribe(ModuleRootListener.TOPIC, new ModuleRootListener() {
+                @Override
+                public void rootsChanged(@NotNull ModuleRootEvent event) {
+                    roots_changes[0]++;
+                }
+            });
+            // without rescanning, adding a real library starts indexing that races the fixture's teardown
+            WriteAction.runAndWait(() -> ProjectRootManagerEx.getInstanceEx(getProject()).makeRootsChange(EmptyRunnable.getInstance(), RootsChangeRescanningInfo.NO_RESCAN_NEEDED));
+            assertEquals(1, roots_changes[0]);
             WriteAction.runAndWait(() -> ProjectJdkTable.getInstance().addJdk(other_sdk));
             assertNull(refresh.scheduled_);
 
