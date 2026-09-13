@@ -57,7 +57,7 @@ import java.awt.event.MouseEvent;
 import java.util.*;
 import java.util.List;
 
-public final class BldProjectWindow extends SimpleToolWindowPanel implements DataProvider, Disposable {
+public final class BldProjectWindow extends SimpleToolWindowPanel implements Disposable {
     private Project project_;
     private StructureTreeModel treeModel_;
     private Tree tree_;
@@ -140,7 +140,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dat
             }
 
             @Override
-            public void shortcutChanged(@NotNull Keymap keymap, @NonNls @NotNull String actionId, boolean fromSettings) {
+            public void shortcutsChanged(@NotNull Keymap keymap, @NonNls @NotNull Collection<String> actionIds, boolean fromSettings) {
                 treeModel_.invalidateAsync();
             }
         });

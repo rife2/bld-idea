@@ -6,7 +6,6 @@ package rife.bld.idea.console;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.IdeBundle;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -16,7 +15,7 @@ import rife.bld.idea.utils.BldBundle;
 
 class BldConsoleActionStop extends DumbAwareAction {
     public BldConsoleActionStop() {
-        super(IdeBundle.message("action.stop"), null, AllIcons.Actions.Suspend);
+        super(BldBundle.message("bld.action.stop.name"), null, AllIcons.Actions.Suspend);
     }
 
     @Override

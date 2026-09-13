@@ -4,6 +4,21 @@
 
 ## [Unreleased]
 
+- Requires IntelliJ IDEA 2024.1 or later.
+- Updated to intellij-platform-plugin 2.18.1 and Gradle 9.7.1.
+- Replaced deprecated and internal IntelliJ Platform APIs.
+- Added gutter icons to run the commands of the `bld` build file.
+- Added automatic refresh when the `bld` build sources, the wrapper properties or the project SDK change.
+- Improved loading of the `bld` commands and dependencies in the background, projects that don't use `bld` are skipped.
+- Renamed the run configuration type that clashed with Ant, existing `bld` run configurations need to be recreated.
+- Fixed failing before or after compile commands not stopping the compilation.
+- Fixed a `bld` build that doesn't compile clearing the commands and dependencies.
+- Fixed `bld` commands running at the same time compiling the build over each other.
+- Fixed command actions staying registered after their project was closed.
+- Fixed dependency names ending with a line break.
+- Fixed Edit Main not working while the project is indexing.
+- Fixed Edit Properties having the same icon as Edit Main in the new UI.
+
 ## [0.7.2] - 2024-11-14
 
 - Updated for latest IntelliJ IDEA.

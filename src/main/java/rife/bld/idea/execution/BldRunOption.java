@@ -4,7 +4,6 @@
  */
 package rife.bld.idea.execution;
 
-import com.intellij.openapi.util.JDOMExternalizable;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jdom.Element;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.NonNls;
 import java.util.Objects;
 
 @Tag("build-option")
-public final class BldRunOption implements JDOMExternalizable, Cloneable {
+public final class BldRunOption implements Cloneable {
     @NonNls  private static final String NAME = "bld.name";
     private String optionName_;
 
@@ -34,12 +33,10 @@ public final class BldRunOption implements JDOMExternalizable, Cloneable {
         optionName_ = optionName.trim();
     }
 
-    @Override
     public void readExternal(Element element) {
         optionName_ = element.getAttributeValue(NAME);
     }
 
-    @Override
     public void writeExternal(Element element) {
         element.setAttribute(NAME, getOptionName());
     }

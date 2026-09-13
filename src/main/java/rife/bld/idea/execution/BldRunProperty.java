@@ -4,7 +4,6 @@
  */
 package rife.bld.idea.execution;
 
-import com.intellij.openapi.util.JDOMExternalizable;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 import org.jdom.Element;
@@ -13,7 +12,7 @@ import org.jetbrains.annotations.NonNls;
 import java.util.Objects;
 
 @Tag("build-property")
-public final class BldRunProperty implements JDOMExternalizable, Cloneable {
+public final class BldRunProperty implements Cloneable {
     @NonNls  private static final String NAME = "bld.name";
     @NonNls private static final String VALUE = "value";
     private String propertyName_;
@@ -46,13 +45,11 @@ public final class BldRunProperty implements JDOMExternalizable, Cloneable {
         propertyValue_ = propertyValue;
     }
 
-    @Override
     public void readExternal(Element element) {
         propertyName_ = element.getAttributeValue(NAME);
         propertyValue_ = element.getAttributeValue(VALUE);
     }
 
-    @Override
     public void writeExternal(Element element) {
         element.setAttribute(NAME, getPropertyName());
         element.setAttribute(VALUE, getPropertyValue());

@@ -128,7 +128,7 @@ public final class BldConsoleManager {
                     if (!file.exists()) {
                         file = new File(project.getBasePath(), splitByColon[0]);
                     }
-                    var virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file);
+                    var virtualFile = LocalFileSystem.getInstance().findFileByNioFile(file.toPath());
                     if (virtualFile == null) {
                         return Optional.empty();
                     }

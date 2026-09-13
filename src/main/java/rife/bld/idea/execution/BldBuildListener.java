@@ -8,6 +8,7 @@ public interface BldBuildListener {
     int FINISHED_SUCCESSFULLY = 0;
     int ABORTED = 1;
     int FAILED_TO_RUN = 2;
+    int FAILED = 3;
 
     BldBuildListener DUMMY = state -> { };
 

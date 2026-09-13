@@ -5,15 +5,15 @@
 package rife.bld.idea.console;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.utils.BldBundle;
 
 class BldConsoleActionScrollTop extends DumbAwareAction {
     public BldConsoleActionScrollTop() {
-        super(ActionsBundle.message("action.EditorScrollTop.text"), null,
+        super(BldBundle.message("bld.action.scroll.top.name"), null,
                 AllIcons.RunConfigurations.Scroll_up);
     }
 

@@ -10,15 +10,11 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.console.BldConsoleManager;
-import rife.bld.idea.execution.BldExecuteDependencyTree;
-import rife.bld.idea.execution.BldExecuteListCommands;
-import rife.bld.idea.execution.BldExecution;
+import rife.bld.idea.execution.BldRefresh;
 import rife.bld.idea.utils.BldBundle;
 
 final class BldProjectActionRefresh extends AnAction implements DumbAware {
@@ -33,17 +29,8 @@ final class BldProjectActionRefresh extends AnAction implements DumbAware {
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         FileDocumentManager.getInstance().saveAllDocuments();
-
-        new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.refresh"), true) {
-            @Override
-            public void run(@NotNull ProgressIndicator indicator) {
-                BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.refresh"), ConsoleViewContentType.USER_INPUT, project_);
-
-                var execution = BldExecution.instance(project_);
-                BldExecuteListCommands.run(execution);
-                BldExecuteDependencyTree.run(execution);
-            }
-        }.queue();
+        BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.refresh"), ConsoleViewContentType.USER_INPUT, project_);
+        BldRefresh.instance(project_).refresh();
     }
 
     @Override

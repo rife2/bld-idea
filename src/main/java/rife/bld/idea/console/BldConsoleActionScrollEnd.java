@@ -5,15 +5,15 @@
 package rife.bld.idea.console;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.utils.BldBundle;
 
 class BldConsoleActionScrollEnd extends DumbAwareAction {
     public BldConsoleActionScrollEnd() {
-        super(ActionsBundle.message("action.EditorConsoleScrollToTheEnd.text"), null,
+        super(BldBundle.message("bld.action.scroll.end.name"), null,
                 AllIcons.RunConfigurations.Scroll_down);
     }
 

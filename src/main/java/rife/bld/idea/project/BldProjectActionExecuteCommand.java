@@ -6,6 +6,7 @@ package rife.bld.idea.project;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -28,10 +29,17 @@ public final class BldProjectActionExecuteCommand extends DumbAwareAction {
     public BldProjectActionExecuteCommand(final @NotNull Project project,
                                           final String command,
                                           final @NlsActions.ActionDescription String description) {
+        this(project, command, description, "Bld Command: " + command);
+    }
+
+    public BldProjectActionExecuteCommand(final @NotNull Project project,
+                                          final String command,
+                                          final @NlsActions.ActionDescription String description,
+                                          final @NlsActions.ActionText String text) {
         project_ = project;
 
         var template_presentation = getTemplatePresentation();
-        template_presentation.setText("Bld Command: " + command, false);
+        template_presentation.setText(text, false);
         template_presentation.setDescription(description);
         command_ = command;
         debugString_ = "Command action: " + command +
@@ -47,6 +55,7 @@ public final class BldProjectActionExecuteCommand extends DumbAwareAction {
         Project project = e.getProject();
         if (project == null) return;
 
+        FileDocumentManager.getInstance().saveAllDocuments();
         new Task.Backgroundable(project_, BldBundle.message("bld.project.progress.commands", command_), true) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {

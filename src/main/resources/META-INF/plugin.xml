@@ -12,6 +12,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <postStartupActivity implementation="rife.bld.idea.ProjectOpenStartupActivity"/>
         <configurationType implementation="rife.bld.idea.execution.BldRunConfigurationType"/>
+        <runLineMarkerContributor language="JAVA" implementationClass="rife.bld.idea.project.BldRunLineMarkerContributor"/>
         <compiler.task execute="BEFORE" implementation="rife.bld.idea.config.tasks.BldBeforeCompileTask"/>
         <compiler.task execute="AFTER" implementation="rife.bld.idea.config.tasks.BldAfterCompileTask"/>
     </extensions>

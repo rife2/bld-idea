@@ -6,12 +6,9 @@ package rife.bld.idea.config;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.compiler.CompileContext;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -31,6 +28,7 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.TimeoutUtil;
 import com.intellij.util.concurrency.Semaphore;
+import com.intellij.util.concurrency.ThreadingAssertions;
 import icons.BldIcons;
 import org.jdom.Element;
 import org.jetbrains.annotations.NonNls;
@@ -96,7 +94,17 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     @Override
     public void dispose() {
-        // no-op
+        // the actions are registered application-wide and hold on to the project
+        if (!ApplicationManager.getApplication().isDisposed()) {
+            unregisterActions();
+        }
+    }
+
+    private void unregisterActions() {
+        var actionManager = ActionManagerEx.getInstanceEx();
+        for (var oldId : actionManager.getActionIdList(getActionIdPrefix(project_))) {
+            actionManager.unregisterAction(oldId);
+        }
     }
 
     private static class EventElementComparator implements Comparator<Element> {
@@ -151,11 +159,9 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @Override
     public Element getState() {
         final var state = new Element("state");
-        ReadAction.run(() -> {
-            final var element = new Element(ELEMENT_EVENTS);
-            saveEvents(element);
-            state.addContent(element);
-        });
+        final var element = new Element(ELEMENT_EVENTS);
+        saveEvents(element);
+        state.addContent(element);
         return state;
     }
 
@@ -246,26 +252,21 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
         commandsMap_.clear();
         sorted.forEach(cmd -> commandsMap_.put(cmd.name(), cmd));
 
-        ReadAction.run(() -> {
-            synchronized (this) {
-                if (!project_.isDisposed()) {
-                    // unregister bld actions
-                    var actionManager = ActionManagerEx.getInstanceEx();
-                    for (var oldId : actionManager.getActionIdList(getActionIdPrefix(project_))) {
-                        actionManager.unregisterAction(oldId);
-                    }
+        synchronized (this) {
+            if (!project_.isDisposed()) {
+                unregisterActions();
 
-                    // register project actions
-                    for (var command : sorted) {
-                        final var action_id = command.actionId();
-                        if (action_id != null) {
-                            final var action = new BldProjectActionExecuteCommand(project_, command.name(), command.description());
-                            actionManager.registerAction(action_id, action);
-                        }
+                // register project actions
+                var actionManager = ActionManagerEx.getInstanceEx();
+                for (var command : sorted) {
+                    final var action_id = command.actionId();
+                    if (action_id != null) {
+                        final var action = new BldProjectActionExecuteCommand(project_, command.name(), command.description());
+                        actionManager.registerAction(action_id, action);
                     }
                 }
             }
-        });
+        }
 
         ApplicationManager.getApplication().invokeLater(
             () -> eventDispatcher_.getMulticaster().configurationChanged(),
@@ -313,20 +314,20 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     }
 
 
-    public boolean executeCommandBeforeCompile(final CompileContext compileContext, final DataContext dataContext) {
-        return runCommandSynchronously(compileContext, dataContext, ExecuteBeforeCompilationEvent.instance());
+    public boolean executeCommandBeforeCompile(final CompileContext compileContext) {
+        return runCommandSynchronously(compileContext, ExecuteBeforeCompilationEvent.instance());
     }
 
-    public boolean executeCommandAfterCompile(final CompileContext compileContext, final DataContext dataContext) {
-        return runCommandSynchronously(compileContext, dataContext, ExecuteAfterCompilationEvent.instance());
+    public boolean executeCommandAfterCompile(final CompileContext compileContext) {
+        return runCommandSynchronously(compileContext, ExecuteAfterCompilationEvent.instance());
     }
 
-    private boolean runCommandSynchronously(CompileContext compileContext, final DataContext dataContext, ExecutionEvent event) {
+    private boolean runCommandSynchronously(CompileContext compileContext, ExecutionEvent event) {
         if (!isInitialized()) {
             return true;
         }
 
-        ApplicationManager.getApplication().assertIsNonDispatchThread();
+        ThreadingAssertions.assertBackgroundThread();
         final var progress = compileContext.getProgressIndicator();
         progress.pushState();
         try {
@@ -344,26 +345,25 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
             }
 
             progress.setText(BldBundle.message("bld.progress.text.running.commands"));
-            return executeCommandSynchronously(dataContext, command);
+            return executeCommandSynchronously(compileContext.getProject(), command);
         }
         finally {
             progress.popState();
         }
     }
 
-    private static boolean executeCommandSynchronously(final DataContext dataContext, final BldBuildCommand command) {
+    private static boolean executeCommandSynchronously(final Project project, final BldBuildCommand command) {
         final var command_done = new Semaphore();
         command_done.down();
         final var result = Ref.create(Boolean.FALSE);
 
         ApplicationManager.getApplication().invokeLater(() -> {
             try {
-                final Project project = dataContext.getData(CommonDataKeys.PROJECT);
-                if (project == null || project.isDisposed()) {
+                if (project.isDisposed()) {
                     command_done.up();
                 }
                 else {
-                    var task = new Task.Backgroundable(null, BldBundle.message("bld.build.progress.dialog.title"), true) {
+                    var task = new Task.Backgroundable(project, BldBundle.message("bld.build.progress.dialog.title"), true) {
                         public void run(@NotNull ProgressIndicator indicator) {
                             BldConsoleManager.showTaskMessage(BldBundle.message("bld.project.console.commands", command.name()), ConsoleViewContentType.USER_INPUT, project);
                             BldExecution.instance(project).executeCommands(new BldExecutionFlags(), command, state -> {

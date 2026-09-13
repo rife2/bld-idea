@@ -5,14 +5,13 @@
 package rife.bld.idea.execution;
 
 import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.JDOMExternalizable;
 import com.intellij.openapi.util.WriteExternalException;
 import org.jdom.Element;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class BldRunConfigurationSettings implements JDOMExternalizable {
+public class BldRunConfigurationSettings {
     private static final String SETTINGS = "bld.settings";
     private static final String OPTION = "option";
     private static final String PROPERTY = "property";
@@ -41,7 +40,6 @@ public class BldRunConfigurationSettings implements JDOMExternalizable {
         return copy;
     }
 
-    @Override
     public void readExternal(Element element)
     throws InvalidDataException {
         element = element.getChild(SETTINGS);
@@ -64,7 +62,6 @@ public class BldRunConfigurationSettings implements JDOMExternalizable {
         }
     }
 
-    @Override
     public void writeExternal(Element element)
     throws WriteExternalException {
         if (commandName_ != null) {

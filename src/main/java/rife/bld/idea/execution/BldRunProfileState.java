@@ -54,7 +54,7 @@ public class BldRunProfileState implements RunProfileState {
             console.addMessageFilter(BldConsoleManager.createMessageFilter(environment_.getProject()));
 
             final var future = new CompletableFuture<ProcessHandler>();
-            var task = new Task.Backgroundable(null, BldBundle.message("bld.build.progress.dialog.title"), true) {
+            var task = new Task.Backgroundable(environment_.getProject(), BldBundle.message("bld.build.progress.dialog.title"), true) {
                 public void run(@NotNull ProgressIndicator indicator) {
                     var commands = new ArrayList<>(List.of(runConfig.getCommand().name()));
                     commands.addAll(runConfig.getRunOptions().stream().map(BldRunOption::getOptionName).toList());

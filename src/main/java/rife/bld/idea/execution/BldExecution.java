@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static rife.bld.idea.utils.BldConstants.*;
 
@@ -34,6 +35,7 @@ import static rife.bld.idea.utils.BldConstants.*;
 public final class BldExecution {
     private final Project project_;
     private final ConcurrentHashMap<Project, Process> runningBldProcesses_ = new ConcurrentHashMap<>();
+    private final ReentrantLock executionLock_ = new ReentrantLock();
 
     private VirtualFile projectDir_ = null;
     private String bldMainClass_ = null;
@@ -90,6 +92,10 @@ public final class BldExecution {
         }
     }
 
+    public VirtualFile getProjectDir() {
+        return projectDir_;
+    }
+
     public String getBldMainClass() {
         return bldMainClass_;
     }
@@ -118,22 +124,22 @@ public final class BldExecution {
         return getBldCache() != null;
     }
 
-    public void setupProject() {
+    public boolean setupProject() {
         projectDir_ = ProjectUtil.guessProjectDir(project_);
         if (projectDir_ == null) {
-            BldConsoleManager.showTaskMessage("Could not find project directory\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
-            return;
+            return false;
         }
 
+        // most projects aren't bld projects, those are left alone
         bldMainClass_ = guessBldMainClass(projectDir_);
         if (bldMainClass_ == null) {
-            BldConsoleManager.showTaskMessage("Could not find bld main class for project " + projectDir_ + "\n", ConsoleViewContentType.ERROR_OUTPUT, project_);
-            return;
+            return false;
         }
 
         BldConsoleManager.showTaskMessage("Found bld main class: " + bldMainClass_ + "\n", ConsoleViewContentType.SYSTEM_OUTPUT, project_);
 
         BldConfiguration.instance(project_).setupComplete();
+        return true;
     }
 
     public List<String> executeCommands(BldExecutionFlags flags, String command) {
@@ -153,18 +159,27 @@ public final class BldExecution {
     }
 
     public List<String> executeCommands(BldExecutionFlags flags, List<String> commands, BldBuildListener listener) {
+        // bld compiles the build sources before running a command, two processes would do that over each other
+        executionLock_.lock();
+        try {
+            return executeCommandsLocked(flags, commands, listener);
+        } finally {
+            executionLock_.unlock();
+        }
+    }
+
+    private List<String> executeCommandsLocked(BldExecutionFlags flags, List<String> commands, BldBuildListener listener) {
         var process_handler = createProcessHandler(commands, Collections.emptyList(), listener);
         if (process_handler == null) {
             return Collections.emptyList();
         }
 
         final var output = new ArrayList<String>();
-        process_handler.addProcessListener(new ProcessAdapter() {
+        process_handler.addProcessListener(new ProcessListener() {
             boolean jsonStarted_ = false;
 
             @Override
             public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-                super.onTextAvailable(event, outputType);
                 if (!outputType.equals(ProcessOutputType.SYSTEM)) {
                     var text = event.getText();
                     if (flags.commands() && !jsonStarted_) {
@@ -184,13 +199,21 @@ public final class BldExecution {
         });
 
         runningBldProcesses_.put(project_, process_handler.getProcess());
+        var state = BldBuildListener.FAILED_TO_RUN;
         try {
-            process_handler.runProcess();
+            var result = process_handler.runProcess();
+            if (result.isCancelled()) {
+                state = BldBuildListener.ABORTED;
+            } else if (result.getExitCode() == 0) {
+                state = BldBuildListener.FINISHED_SUCCESSFULLY;
+            } else {
+                state = BldBuildListener.FAILED;
+            }
         }
         finally {
             runningBldProcesses_.remove(project_, process_handler.getProcess());
 
-            listener.buildFinished(BldBuildListener.FINISHED_SUCCESSFULLY);
+            listener.buildFinished(state);
             projectDir_.refresh(true, true);
         }
 

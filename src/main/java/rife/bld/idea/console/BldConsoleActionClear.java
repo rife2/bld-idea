@@ -5,15 +5,15 @@
 package rife.bld.idea.console;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.IdeBundle;
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import org.jetbrains.annotations.NotNull;
+import rife.bld.idea.utils.BldBundle;
 
 class BldConsoleActionClear extends DumbAwareAction {
     public BldConsoleActionClear() {
-        super(IdeBundle.message("terminal.action.ClearBuffer.text"), null, AllIcons.Actions.GC);
+        super(BldBundle.message("bld.action.clear.name"), null, AllIcons.Actions.GC);
     }
 
     @Override

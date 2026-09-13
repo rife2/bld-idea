@@ -5,12 +5,13 @@
 package rife.bld.idea.config.tasks;
 
 import com.intellij.openapi.compiler.CompileContext;
+import com.intellij.openapi.compiler.CompileTask;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.config.BldConfiguration;
 
-final class BldAfterCompileTask extends BldCompileTask {
+final class BldAfterCompileTask implements CompileTask {
     @Override
     public boolean execute(@NotNull CompileContext context) {
-        return BldConfiguration.instance(context.getProject()).executeCommandAfterCompile(context, createDataContext(context));
+        return BldConfiguration.instance(context.getProject()).executeCommandAfterCompile(context);
     }
 }

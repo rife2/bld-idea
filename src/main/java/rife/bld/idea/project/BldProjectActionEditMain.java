@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -29,10 +30,19 @@ final class BldProjectActionEditMain extends AnAction implements DumbAware {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        var main_class = BldExecution.instance(project_).getBldMainClass();
-        var psi_class = JavaPsiFacade.getInstance(project_).findClass(main_class, GlobalSearchScope.allScope(project_));
-        if (psi_class != null) {
-            FileEditorManager.getInstance(project_).openFile(psi_class.getContainingFile().getVirtualFile());
+        var execution = BldExecution.instance(project_);
+        var main_class = execution.getBldMainClass();
+
+        // the wrapper compiles the build from this directory, which can be opened while indexing
+        var file = execution.getProjectDir().findFileByRelativePath("src/bld/java/" + main_class.replace('.', '/') + ".java");
+        if (file == null && !DumbService.isDumb(project_)) {
+            var psi_class = JavaPsiFacade.getInstance(project_).findClass(main_class, GlobalSearchScope.allScope(project_));
+            if (psi_class != null) {
+                file = psi_class.getContainingFile().getVirtualFile();
+            }
+        }
+        if (file != null) {
+            FileEditorManager.getInstance(project_).openFile(file);
         }
     }
 

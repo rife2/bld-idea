@@ -14,14 +14,17 @@ import rife.bld.idea.console.BldConsoleManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static rife.bld.idea.utils.BldConstants.WRAPPER_JSON_ARGUMENT;
 
 public abstract class BldExecuteListCommands {
     public static void run(BldExecution execution) {
-        var output = String.join("", execution.executeCommands(new BldExecutionFlags().commands(true), List.of("help", WRAPPER_JSON_ARGUMENT)));
+        var succeeded = new AtomicBoolean(false);
+        var output = String.join("", execution.executeCommands(new BldExecutionFlags().commands(true), List.of("help", WRAPPER_JSON_ARGUMENT),
+            state -> succeeded.set(state == BldBuildListener.FINISHED_SUCCESSFULLY)));
         var project = execution.project();
-        if (output.isEmpty()) {
+        if (!succeeded.get() || output.isEmpty()) {
             BldConsoleManager.showTaskMessage("Failed to detect the bld commands.\n", ConsoleViewContentType.ERROR_OUTPUT, project);
             return;
         }
@@ -40,6 +43,7 @@ public abstract class BldExecuteListCommands {
             }
         } catch (JSONException e) {
             BldConsoleManager.showTaskMessage(output + "\n", ConsoleViewContentType.ERROR_OUTPUT, project);
+            return;
         }
 
         BldConfiguration.instance(project).setCommands(commands);
