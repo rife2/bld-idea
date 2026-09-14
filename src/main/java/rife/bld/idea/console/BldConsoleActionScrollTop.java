@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Erik C. Thauvin (https://erik.thauvin.net/))
+ * Copyright 2024 Erik C. Thauvin (https://erik.thauvin.net/)
  * Licensed under the Apache License, Version 2.0 (the "License")
  */
 package rife.bld.idea.console;

@@ -200,6 +200,7 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dis
         group.add(new BldProjectActionClearCache(project_));
         group.addSeparator();
         group.add(new BldProjectActionOffline(project_));
+        group.add(new BldProjectActionShowConsole(project_));
 
         final var action_toolbar = ActionManager.getInstance().createActionToolbar(BldConstants.BLD_EXPLORER_TOOLBAR, group, true);
         action_toolbar.setTargetComponent(this);

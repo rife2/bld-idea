@@ -5,6 +5,7 @@
 package rife.bld.idea.config;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
@@ -61,6 +62,8 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @NonNls private static final String ELEMENT_EXECUTE_ON = "executeOn";
     @NonNls private static final String ELEMENT_EVENT = "event";
     @NonNls private static final String ELEMENT_COMMAND = "command";
+    // a personal preference, kept out of bld.xml since projects commit that file
+    @NonNls private static final String PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE = "bld.activateConsoleOnExecute";
 
     private final Project project_;
     private final Map<ExecutionEvent, String> eventCommandMap_ = Collections.synchronizedMap(new HashMap<>());
@@ -90,6 +93,14 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     public static String getActionIdPrefix(final @NotNull Project project) {
         return ACTION_ID_PREFIX + project.getLocationHash();
+    }
+
+    public boolean isActivateConsoleOnExecute() {
+        return PropertiesComponent.getInstance(project_).getBoolean(PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE, false);
+    }
+
+    public void setActivateConsoleOnExecute(final boolean flag) {
+        PropertiesComponent.getInstance(project_).setValue(PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE, flag, false);
     }
 
     @Override
