@@ -22,6 +22,7 @@ Support for the `bld` pure Java build tool: https://rife2.com/bld
 * `bld` console panel for command output with source code hyperlinking
 * display the `bld` dependency tree
 * toggle to run `bld` in offline or online mode
+* toggle to show the `bld` console when a command is executed
 * auto-save all open files before executing a `bld` command
 * convenient `bld` one-click cache invalidation
 * set `bld` commands to run before or after IDEA compilation

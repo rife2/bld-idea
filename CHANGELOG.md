@@ -4,6 +4,9 @@
 
 ## [Unreleased]
 
+- Added an option to show the `bld` console when a command is executed.
+- Fixed the toolbar icon of the offline toggle not showing its state.
+
 ## [0.8.1] - 2026-09-13
 
 - Replaced an internal IntelliJ Platform API.

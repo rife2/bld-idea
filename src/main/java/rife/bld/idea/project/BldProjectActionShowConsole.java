@@ -22,14 +22,6 @@ final class BldProjectActionShowConsole extends ToggleAction implements DumbAwar
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        boolean state = !isSelected(e);
-        setSelected(e, state);
-        Presentation presentation = e.getPresentation();
-        Toggleable.setSelected(presentation, state);
-    }
-
-    @Override
     public boolean isSelected(@NotNull AnActionEvent e) {
         return BldConfiguration.instance(project_).isActivateConsoleOnExecute();
     }
@@ -40,14 +32,7 @@ final class BldProjectActionShowConsole extends ToggleAction implements DumbAwar
     }
 
     @Override
-    public void update(@NotNull AnActionEvent event) {
-        super.update(event);
-        final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("bld.action.showConsole.name"));
-    }
-
-    @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.EDT;
+        return ActionUpdateThread.BGT;
     }
 }

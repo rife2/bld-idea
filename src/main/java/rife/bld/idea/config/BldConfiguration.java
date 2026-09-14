@@ -5,6 +5,7 @@
 package rife.bld.idea.config;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.application.ApplicationManager;
@@ -61,7 +62,8 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @NonNls private static final String ELEMENT_EXECUTE_ON = "executeOn";
     @NonNls private static final String ELEMENT_EVENT = "event";
     @NonNls private static final String ELEMENT_COMMAND = "command";
-    @NonNls private static final String ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE = "activateConsoleOnExecute";
+    // a personal preference, kept out of bld.xml since projects commit that file
+    @NonNls private static final String PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE = "bld.activateConsoleOnExecute";
 
     private final Project project_;
     private final Map<ExecutionEvent, String> eventCommandMap_ = Collections.synchronizedMap(new HashMap<>());
@@ -80,7 +82,6 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     };
 
     private volatile boolean initialized_ = false;
-    private volatile boolean activateConsoleOnExecute_ = false;
 
     public BldConfiguration(final Project project) {
         project_ = project;
@@ -95,11 +96,11 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     }
 
     public boolean isActivateConsoleOnExecute() {
-        return activateConsoleOnExecute_;
+        return PropertiesComponent.getInstance(project_).getBoolean(PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE, false);
     }
 
     public void setActivateConsoleOnExecute(final boolean flag) {
-        activateConsoleOnExecute_ = flag;
+        PropertiesComponent.getInstance(project_).setValue(PROPERTY_ACTIVATE_CONSOLE_ON_EXECUTE, flag, false);
     }
 
     @Override
@@ -169,7 +170,6 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @Override
     public Element getState() {
         final var state = new Element("state");
-        state.setAttribute(ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE, String.valueOf(activateConsoleOnExecute_));
         final var element = new Element(ELEMENT_EVENTS);
         saveEvents(element);
         state.addContent(element);
@@ -178,8 +178,6 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     @Override
     public void loadState(@NotNull Element state) {
-        activateConsoleOnExecute_ = Boolean.parseBoolean(state.getAttributeValue(ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE));
-
         for (var events_element : state.getChildren(ELEMENT_EVENTS)) {
             for (var event_element : events_element.getChildren()) {
                 final var event_id = event_element.getAttributeValue(ELEMENT_EVENT);

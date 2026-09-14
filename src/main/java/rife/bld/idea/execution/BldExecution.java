@@ -230,9 +230,13 @@ public final class BldExecution {
 
     private void activateConsole() {
         ApplicationManager.getApplication().invokeLater(() -> {
+            if (project_.isDisposed()) {
+                return;
+            }
+            // shown without focus, the editor keeps the keyboard while the command runs
             var tool_window = ToolWindowManager.getInstance(project_).getToolWindow(CONSOLE_NAME);
             if (tool_window != null) {
-                tool_window.activate(null);
+                tool_window.show();
             }
         });
     }

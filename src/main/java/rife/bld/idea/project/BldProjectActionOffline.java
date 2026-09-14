@@ -22,14 +22,6 @@ final class BldProjectActionOffline extends ToggleAction implements DumbAware {
     }
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        boolean state = !isSelected(e);
-        setSelected(e, state);
-        Presentation presentation = e.getPresentation();
-        Toggleable.setSelected(presentation, state);
-    }
-
-    @Override
     public boolean isSelected(@NotNull AnActionEvent e) {
         return BldExecution.instance(project_).isOffline();
     }
@@ -37,12 +29,6 @@ final class BldProjectActionOffline extends ToggleAction implements DumbAware {
     @Override
     public void setSelected(@NotNull AnActionEvent e, boolean state) {
         BldExecution.instance(project_).setOffline(state);
-    }
-
-    @Override
-    public void update(@NotNull AnActionEvent event) {
-        final var presentation = event.getPresentation();
-        presentation.setText(BldBundle.messagePointer("bld.action.offline.name"));
     }
 
     @Override
