@@ -10,12 +10,14 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.SimpleJavaParameters;
 import com.intellij.execution.process.*;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.Service;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.ToolWindowManager;
 import org.jetbrains.annotations.NotNull;
 import rife.bld.idea.config.BldBuildCommand;
 import rife.bld.idea.config.BldConfiguration;
@@ -41,6 +43,7 @@ public final class BldExecution {
     private String bldMainClass_ = null;
 
     private boolean offline_ = false;
+    private boolean activateConsoleOnExecute_ = false;
 
     public BldExecution(@NotNull Project project) {
         project_ =  project;
@@ -60,6 +63,14 @@ public final class BldExecution {
 
     public boolean isOffline() {
         return offline_;
+    }
+
+    public void setActivateConsoleOnExecute(boolean flag) {
+        activateConsoleOnExecute_ = flag;
+    }
+
+    public boolean isActivateConsoleOnExecute() {
+        return activateConsoleOnExecute_;
     }
 
     public boolean hasActiveBldProcess() {
@@ -174,6 +185,12 @@ public final class BldExecution {
             return Collections.emptyList();
         }
 
+        // only surface the console for actual bld command runs, not for the
+        // internal command/dependency-tree detection queries
+        if (activateConsoleOnExecute_ && !flags.commands() && !flags.dependencyTree()) {
+            activateConsole();
+        }
+
         final var output = new ArrayList<String>();
         process_handler.addProcessListener(new ProcessListener() {
             boolean jsonStarted_ = false;
@@ -218,6 +235,15 @@ public final class BldExecution {
         }
 
         return output;
+    }
+
+    private void activateConsole() {
+        ApplicationManager.getApplication().invokeLater(() -> {
+            var tool_window = ToolWindowManager.getInstance(project_).getToolWindow(CONSOLE_NAME);
+            if (tool_window != null) {
+                tool_window.activate(null);
+            }
+        });
     }
 
     public CapturingProcessHandler createProcessHandler(List<String> commands, List<BldRunProperty> properties, BldBuildListener listener) {
