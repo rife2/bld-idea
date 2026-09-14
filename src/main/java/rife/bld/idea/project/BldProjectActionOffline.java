@@ -33,6 +33,6 @@ final class BldProjectActionOffline extends ToggleAction implements DumbAware {
 
     @Override
     public @NotNull ActionUpdateThread getActionUpdateThread() {
-        return ActionUpdateThread.EDT;
+        return ActionUpdateThread.BGT;
     }
 }
