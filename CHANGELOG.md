@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.8.2] - 2026-09-14
+
 - Added an option to show the `bld` console when a command is executed.
 - Fixed the toolbar icon of the offline toggle not showing its state.
 
@@ -68,7 +70,8 @@
 
 - Initial release for `bld` 2.0.1.
 
-[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.8.1...HEAD
+[Unreleased]: https://github.com/rife2/bld-idea/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/rife2/bld-idea/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/rife2/bld-idea/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/rife2/bld-idea/compare/v0.7.2...v0.8.0
 [0.7.2]: https://github.com/rife2/bld-idea/compare/v0.7.1...v0.7.2
