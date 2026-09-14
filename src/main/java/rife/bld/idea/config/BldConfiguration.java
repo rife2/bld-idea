@@ -61,6 +61,7 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @NonNls private static final String ELEMENT_EXECUTE_ON = "executeOn";
     @NonNls private static final String ELEMENT_EVENT = "event";
     @NonNls private static final String ELEMENT_COMMAND = "command";
+    @NonNls private static final String ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE = "activateConsoleOnExecute";
 
     private final Project project_;
     private final Map<ExecutionEvent, String> eventCommandMap_ = Collections.synchronizedMap(new HashMap<>());
@@ -79,6 +80,7 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     };
 
     private volatile boolean initialized_ = false;
+    private volatile boolean activateConsoleOnExecute_ = false;
 
     public BldConfiguration(final Project project) {
         project_ = project;
@@ -90,6 +92,14 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     public static String getActionIdPrefix(final @NotNull Project project) {
         return ACTION_ID_PREFIX + project.getLocationHash();
+    }
+
+    public boolean isActivateConsoleOnExecute() {
+        return activateConsoleOnExecute_;
+    }
+
+    public void setActivateConsoleOnExecute(final boolean flag) {
+        activateConsoleOnExecute_ = flag;
     }
 
     @Override
@@ -159,6 +169,7 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
     @Override
     public Element getState() {
         final var state = new Element("state");
+        state.setAttribute(ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE, String.valueOf(activateConsoleOnExecute_));
         final var element = new Element(ELEMENT_EVENTS);
         saveEvents(element);
         state.addContent(element);
@@ -167,6 +178,8 @@ public final class BldConfiguration implements PersistentStateComponent<Element>
 
     @Override
     public void loadState(@NotNull Element state) {
+        activateConsoleOnExecute_ = Boolean.parseBoolean(state.getAttributeValue(ATTRIBUTE_ACTIVATE_CONSOLE_ON_EXECUTE));
+
         for (var events_element : state.getChildren(ELEMENT_EVENTS)) {
             for (var event_element : events_element.getChildren()) {
                 final var event_id = event_element.getAttributeValue(ELEMENT_EVENT);

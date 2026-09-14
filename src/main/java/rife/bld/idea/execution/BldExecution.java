@@ -43,7 +43,6 @@ public final class BldExecution {
     private String bldMainClass_ = null;
 
     private boolean offline_ = false;
-    private boolean activateConsoleOnExecute_ = false;
 
     public BldExecution(@NotNull Project project) {
         project_ =  project;
@@ -63,14 +62,6 @@ public final class BldExecution {
 
     public boolean isOffline() {
         return offline_;
-    }
-
-    public void setActivateConsoleOnExecute(boolean flag) {
-        activateConsoleOnExecute_ = flag;
-    }
-
-    public boolean isActivateConsoleOnExecute() {
-        return activateConsoleOnExecute_;
     }
 
     public boolean hasActiveBldProcess() {
@@ -187,7 +178,7 @@ public final class BldExecution {
 
         // only surface the console for actual bld command runs, not for the
         // internal command/dependency-tree detection queries
-        if (activateConsoleOnExecute_ && !flags.commands() && !flags.dependencyTree()) {
+        if (BldConfiguration.instance(project_).isActivateConsoleOnExecute() && !flags.commands() && !flags.dependencyTree()) {
             activateConsole();
         }
 

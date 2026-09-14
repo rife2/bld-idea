@@ -1,5 +1,5 @@
 /*
- * Copyright 2024 Geert Bevin (gbevin[remove] at uwyn dot com)
+ * Copyright 2026 Erik C. Thauvin (https://erik.thauvin.net/)
  * Licensed under the Apache License, Version 2.0 (the "License")
  */
 package rife.bld.idea.project;
@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import rife.bld.idea.execution.BldExecution;
+import rife.bld.idea.config.BldConfiguration;
 import rife.bld.idea.utils.BldBundle;
 
 final class BldProjectActionShowConsole extends ToggleAction implements DumbAware {
@@ -31,16 +31,17 @@ final class BldProjectActionShowConsole extends ToggleAction implements DumbAwar
 
     @Override
     public boolean isSelected(@NotNull AnActionEvent e) {
-        return BldExecution.instance(project_).isActivateConsoleOnExecute();
+        return BldConfiguration.instance(project_).isActivateConsoleOnExecute();
     }
 
     @Override
     public void setSelected(@NotNull AnActionEvent e, boolean state) {
-        BldExecution.instance(project_).setActivateConsoleOnExecute(state);
+        BldConfiguration.instance(project_).setActivateConsoleOnExecute(state);
     }
 
     @Override
     public void update(@NotNull AnActionEvent event) {
+        super.update(event);
         final var presentation = event.getPresentation();
         presentation.setText(BldBundle.messagePointer("bld.action.showConsole.name"));
     }
