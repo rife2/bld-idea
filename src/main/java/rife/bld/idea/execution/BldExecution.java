@@ -39,10 +39,10 @@ public final class BldExecution {
     private final ConcurrentHashMap<Project, Process> runningBldProcesses_ = new ConcurrentHashMap<>();
     private final ReentrantLock executionLock_ = new ReentrantLock();
 
-    private VirtualFile projectDir_ = null;
-    private String bldMainClass_ = null;
+    private volatile VirtualFile projectDir_ = null;
+    private volatile String bldMainClass_ = null;
 
-    private boolean offline_ = false;
+    private volatile boolean offline_ = false;
 
     public BldExecution(@NotNull Project project) {
         project_ =  project;
