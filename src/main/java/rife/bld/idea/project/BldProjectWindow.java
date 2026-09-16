@@ -13,6 +13,7 @@ import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.WriteIntentReadAction;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.keymap.Keymap;
 import com.intellij.openapi.keymap.KeymapManagerListener;
@@ -246,14 +247,17 @@ public final class BldProjectWindow extends SimpleToolWindowPanel implements Dis
             return;
         }
 
-        // save all documents
-        FileDocumentManager.getInstance().saveAllDocuments();
+        // the swing listeners that call this don't hold the write intent lock
+        WriteIntentReadAction.run((Runnable)() -> {
+            // save all documents
+            FileDocumentManager.getInstance().saveAllDocuments();
 
-        // execute the selected commands
-        executeBuildCommands(getCommandNamesFromPaths(tree_.getSelectionPaths()));
+            // execute the selected commands
+            executeBuildCommands(getCommandNamesFromPaths(tree_.getSelectionPaths()));
 
-        // move focus to editor
-        ToolWindowManager.getInstance(project_).activateEditorComponent();
+            // move focus to editor
+            ToolWindowManager.getInstance(project_).activateEditorComponent();
+        });
     }
 
     boolean canRunSelection() {

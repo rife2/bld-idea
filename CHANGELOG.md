@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+- Fixed #56, running a command from the `bld` tool window failing on IntelliJ IDEA 2026.2.
+
 ## [0.8.2] - 2026-09-14
 
 - Added an option to show the `bld` console when a command is executed.
